@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>冲突的进化 · The Evolution of Conflict</title>
+  <meta name="description" content="一个关于鹰鸽博弈的互动游戏：强硬为什么存在？规则能改变什么？" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Xiaolai&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦅</text></svg>" />
+  <link rel="stylesheet" href="./sketch.css" />
+</head>
+<body>
+
+  <!-- 第 0 屏：标题 -->
+  <section class="slide" id="slide-title">
+    <div class="slide-inner">
+      <p class="step title-sub">一个关于鹰鸽博弈的互动游戏</p>
+      <h1 class="step title-scribble">冲突的进化</h1>
+      <p class="step note" style="margin-top:10px">The Evolution of Conflict</p>
+      <div class="step" style="margin-top:48px">
+        <button class="btn btn-primary btn-large" id="btn-start">开始 →</button>
+      </div>
+      <p class="step note" style="margin-top:60px">
+        灵感来自 <a href="https://dccxi.com/trust/" target="_blank" rel="noopener">《信任的进化》</a>（ncase）
+      </p>
+    </div>
+  </section>
+
+  <!-- 第 1 屏：情境引入 -->
+  <section class="slide" id="slide-intro">
+    <div class="slide-inner">
+      <div class="paper-card step">
+        <p class="big-quote">遇到竞争时，<br />我应该<span class="hl-hawk">强硬</span>，还是<span class="hl-dove">退让</span>？</p>
+      </div>
+      <p class="step">别急。我们不讲道理，先来玩一局。</p>
+      <p class="step">接下来，你会遇到一些对手。<br />每次，中间会出现一份食物——它想吃，你也想吃。</p>
+      <p class="step">每一回合，你只有两个选择：</p>
+      <div class="step">
+        <span class="btn btn-hawk" style="cursor:default">争</span>
+        <span class="btn btn-dove" style="cursor:default">让</span>
+      </div>
+      <div class="step" style="margin-top:28px">
+        <button class="btn btn-primary btn-large" id="btn-intro-next">看看第一位对手 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 第 2 屏：第一关 · 单次对决 -->
+  <section class="slide" id="slide-duel">
+    <div class="slide-inner">
+
+      <div id="duel-arena">
+        <h2>第一关 · 你会争，还是让？</h2>
+        <p class="note" id="round-indicator">第 1 / 4 回合</p>
+
+        <div class="stage-wrap">
+          <canvas id="duel-canvas" width="640" height="320"></canvas>
+          <p id="round-remark" class="big-quote" style="min-height:2em;margin-top:6px">
+            中间有一丛浆果。它想吃，你也想吃。
+          </p>
+        </div>
+
+        <div>
+          <button class="btn btn-hawk btn-large" id="btn-fight">争！</button>
+          <button class="btn btn-dove btn-large" id="btn-yield">让</button>
+        </div>
+
+        <button class="btn btn-primary" id="btn-duel-next" style="display:none">下一位对手 →</button>
+
+        <p class="note" style="margin-top:14px">
+          你的总收益：<b class="hl-dove" id="score-you">0</b>
+          &nbsp;·&nbsp;
+          对手的总收益：<b class="hl-hawk" id="score-rival">0</b>
+        </p>
+      </div>
+
+      <div id="duel-analysis" style="display:none">
+        <h2>所以刚才发生了什么？</h2>
+        <p id="duel-summary" class="paper-card"></p>
+
+        <button class="btn btn-primary" id="btn-show-payoff-matrix">把四种相遇放在一起 →</button>
+
+        <div id="duel-matrix-analysis" style="display:none">
+
+        <div class="paper-card">
+          <p>
+            我们把每种情况的<b>长期平均收益</b>记下来（食物值 <b>50</b> 分；打起来后，<b>赢家得到 50 分，输家损失 100 分</b>）：
+          </p>
+          <table class="payoff-table">
+            <tr><th>你 \ 对方</th><th class="hl-hawk">对方争</th><th class="hl-dove">对方让</th></tr>
+            <tr>
+              <th class="hl-hawk">你争</th>
+              <td class="cell-bad" id="m-hh">-25</td>
+              <td class="cell-good" id="m-hd">50</td>
+            </tr>
+            <tr>
+              <th class="hl-dove">你让</th>
+              <td id="m-dh">0</td>
+              <td id="m-dd">25</td>
+            </tr>
+          </table>
+          <p class="note">
+            博弈论里，「争」叫做<b class="hl-hawk">鹰</b>策略，「让」叫做<b class="hl-dove">鸽</b>策略。
+          </p>
+        </div>
+
+        <p>注意到没有——<b>强硬并不是愚蠢的。</b>对方退让时，争的人拿得最多。</p>
+        <p>
+          只有当两只鹰迎头相撞，风险才真正出现：输赢机会各半，<br />
+          所以长期平均下来，每只鹰的收益是 <b>(50 - 100) ÷ 2 = -25</b> 分。
+        </p>
+
+        <p class="big-quote step shown" style="margin-top:20px">
+          如果强硬经常能占便宜，<br />那大家是不是都应该<span class="underline-sketch">越来越强硬</span>？
+        </p>
+
+        <button class="btn btn-primary btn-large" id="btn-to-next-level" style="margin-top:20px">
+          去第二关看看 →
+        </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 第 3 屏：第二关 · 群体演化 -->
+  <section class="slide" id="slide-population">
+    <div class="slide-inner">
+
+      <div id="pop-playground">
+        <h2>第二关 · 如果大家都这么做？</h2>
+        <p class="step">这次我们把镜头拉远——看看一<b>整个群体</b>。</p>
+        <p class="step">这里有 12 个邻居：<b class="hl-hawk">2 只鹰</b>（红帽）和 <b class="hl-dove">10 只鸽</b>（蓝帽）。</p>
+        <p class="step">每一代，混得差的策略会被混得好的策略取代。<br />点下面的按钮，看看会发生什么。</p>
+
+        <div class="paper-card step" style="padding:10px 16px">
+          <canvas id="pop-canvas" style="width:100%;height:460px"></canvas>
+          <div class="pop-hud">
+            <span class="note">第 <b id="gen-count">0</b> 代 · <b id="pop-ratio">2 鹰 / 10 鸽</b></span>
+            <div class="pop-bar"><div class="pop-bar-hawk" id="pop-bar-hawk"></div></div>
+            <p class="note" id="pop-hint" style="margin-top:6px">点「演化一代」，看看一代之后谁混得好。</p>
+          </div>
+        </div>
+
+        <div class="step">
+          <button class="btn btn-primary" id="btn-evolve">演化一代 →</button>
+        </div>
+
+        <div id="settle-notice" class="settle-notice" style="display:none">
+          <p class="big-quote">又过了一代，鹰鸽比例仍然没变。</p>
+          <p class="note">鹰和鸽的长期收益已经打平，群体才真正停在了这里。</p>
+          <button class="btn btn-primary" id="btn-show-analysis">看看这意味着什么 →</button>
+        </div>
+
+        <div class="step" style="margin-top:10px">
+          <canvas id="pop-chart" class="evo-chart" width="560" height="170"></canvas>
+        </div>
+      </div>
+
+      <div id="pop-analysis" style="display:none">
+        <h2>群体停下来了</h2>
+        <p class="step">注意看曲线——鹰的比例没有一路冲到 100%，<br />而是在 <b>一半左右</b> 来回摆动，停住了。</p>
+        <div class="paper-card step">
+          <p class="big-quote">一种策略的成功，<br />会改变让它成功的环境。</p>
+          <p>
+            鹰少的时候，到处是能让它占便宜的鸽，所以鹰变多。<br />
+            可鹰越多，越容易撞上另一只鹰——打一架，双方各亏一大笔。<br />
+            到某个比例时，当鹰和当鸽的期望收益<b>刚好打平</b>，群体就停在那里。
+          </p>
+          <p class="note">
+            这叫做<b>频率依赖</b>：一个行为划不划算，不只看它自己，<br />
+            还看群体里有多少人在做同样的事。<br />
+            （在这个世界里，平衡点 = 食物价值 ÷ 打架代价 = 50 ÷ 100 = <b>50%</b>）
+          </p>
+        </div>
+        <p class="big-quote step">
+          那么——一个<b class="hl-hawk">全是鹰</b>的世界，或一个<b class="hl-dove">全是鸽</b>的世界，<br />
+          会不会更稳定？
+        </p>
+        <button class="btn btn-primary btn-large step" id="btn-to-extremes">去第三关看看 →</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 第 4 屏：第三关 · 极端世界 -->
+  <section class="slide" id="slide-extremes">
+    <div class="slide-inner">
+      <h2 class="step">第三关 · 纯鹰和纯鸽真的稳定吗？</h2>
+      <p class="step">不要同时看两个世界。这一次，我们一个世界、一个步骤地试。</p>
+
+      <div class="extreme-workspace step">
+        <div class="paper-card extreme-stage">
+          <canvas id="extreme-canvas" data-layout="linked-circle" data-links="all" style="width:100%;height:340px"></canvas>
+          <p class="big-quote" id="extreme-world-name">一个全是鹰的世界</p>
+          <p id="extreme-generation">第 0 代 · 12 鹰 / 0 鸽</p>
+          <div class="pop-bar" aria-hidden="true"><div class="pop-bar-hawk" id="extreme-bar-hawk"></div></div>
+          <p class="note" id="extreme-hint">先看看：当每个人都选择强硬，会发生什么？</p>
+        </div>
+
+        <div class="extreme-phase-slot">
+          <div class="paper-card extreme-phase" id="extreme-hawk-intro">
+            <p class="env-chapter">第一幕 · 全是鹰</p>
+            <p class="big-quote">如果所有人都强硬，<br />大家真的都会赢吗？</p>
+            <button class="btn btn-primary" id="btn-extreme-hawk-round">让它们交手一轮 →</button>
+          </div>
+
+          <div class="paper-card extreme-phase" id="extreme-hawk-cost" style="display:none">
+            <p class="big-quote">结果是：大家都在亏。</p>
+            <p>鹰遇到鹰，平均每次只有 <b class="hl-hawk">-25 分</b>。全是强硬者，并没有让所有人都占便宜。</p>
+            <p class="note">如果这时出现一个拒绝打架的家伙呢？</p>
+            <button class="btn btn-dove" id="btn-extreme-add-dove">加入一只鸽 →</button>
+          </div>
+
+          <div class="paper-card extreme-phase" id="extreme-hawk-evolve" style="display:none">
+            <p class="env-chapter">一只鸽进入了全鹰世界</p>
+            <p class="big-quote" id="extreme-hawk-evolve-title">它能留下来吗？</p>
+            <p id="extreme-hawk-evolve-copy">每次只演化一代，看看谁会多占一个位置。</p>
+            <button class="btn btn-primary" id="btn-extreme-hawk-evolve">演化一代 →</button>
+          </div>
+
+          <div class="paper-card extreme-phase" id="extreme-hawk-result" style="display:none">
+            <p class="big-quote">鸽没有消失，反而扩散了。</p>
+            <p>鹰越多，彼此打架越频繁；不参与打架的鸽获得了生存空间。最后，群体停在了 6 鹰 / 6 鸽。</p>
+            <button class="btn btn-primary" id="btn-extreme-switch-dove">再看一个全是鸽的世界 →</button>
+          </div>
+
+          <div class="paper-card extreme-phase" id="extreme-dove-intro" style="display:none">
+            <p class="env-chapter">第二幕 · 全是鸽</p>
+            <p class="big-quote">如果所有人都退让，<br />这个世界会一直平静吗？</p>
+            <button class="btn btn-primary" id="btn-extreme-dove-round">让它们相遇一轮 →</button>
+          </div>
+
+          <div class="paper-card extreme-phase" id="extreme-dove-benefit" style="display:none">
+            <p class="big-quote">现在很和平：大家平分食物。</p>
+            <p>两只鸽相遇，平均每只得到 <b class="hl-dove">25 分</b>。但这个世界也留下了一个机会……</p>
+            <button class="btn btn-hawk" id="btn-extreme-add-hawk">加入一只鹰 →</button>
+          </div>
+
+          <div class="paper-card extreme-phase" id="extreme-dove-evolve" style="display:none">
+            <p class="env-chapter">一只鹰进入了全鸽世界</p>
+            <p class="big-quote" id="extreme-dove-evolve-title">它会占到便宜吗？</p>
+            <p id="extreme-dove-evolve-copy">每次只演化一代，看看谁会多占一个位置。</p>
+            <button class="btn btn-primary" id="btn-extreme-dove-evolve">演化一代 →</button>
+          </div>
+
+          <div class="paper-card extreme-phase" id="extreme-final" style="display:none">
+            <p class="big-quote">两个极端世界，走向了同一个平衡。</p>
+            <p>极端状态本身，会创造出另一种策略的生存空间。</p>
+            <p class="note">没有哪个策略永远正确。接下来看看：究竟是什么决定了鹰会多一点，还是鸽会多一点？</p>
+            <button class="btn btn-primary" id="btn-to-env">去第四关看看 →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 第 5 屏：第四关 · 环境参数实验 -->
+  <section class="slide" id="slide-env-teaser">
+    <div class="slide-inner">
+      <h2 class="step">第四关 · 换一个世界</h2>
+
+      <div id="env-playground">
+        <p class="step">还是刚才那 12 个邻居。这次，不改变它们——只改变它们生活的世界。</p>
+
+        <div class="env-workspace step">
+        <div class="paper-card env-lab">
+          <canvas id="env-canvas" data-layout="linked-circle" data-links="all" style="width:100%;height:320px"></canvas>
+
+          <div class="env-result">
+            <p class="big-quote" id="env-world-name">原来的世界</p>
+            <p class="env-generation" id="env-generation">现在 · 6 鹰 / 6 鸽</p>
+            <div class="pop-bar" aria-hidden="true"><div class="pop-bar-hawk" id="env-bar-hawk"></div></div>
+            <p class="note" id="env-explanation">上一关里，这个群体最终停在了一半鹰、一半鸽。</p>
+          </div>
+
+          <div class="env-parameter-strip" aria-label="当前世界参数">
+            <span>食物价值 <b class="hl-hawk"><output id="env-value-output">50</output> 分</b></span>
+            <span>打架损失 <b class="hl-dove"><output id="env-cost-output">100</output> 分</b></span>
+          </div>
+
+          <p class="note env-payoff-note">
+            两只鹰相遇时，平均每只得到：<b id="env-hh-payoff">(50 - 100) ÷ 2 = -25</b> 分
+          </p>
+        </div>
+
+        <div class="env-phase-slot">
+        <div class="paper-card env-story-panel env-phase" id="env-step-cost-high">
+          <p class="env-chapter">实验一 · 只改变打架的代价</p>
+          <p class="big-quote">如果食物还是 50 分，<br />但打一架变得更惨呢？</p>
+          <p class="note">先别猜答案。把损失提高，再让同样的 6 鹰 / 6 鸽重新演化。</p>
+          <button class="btn btn-primary" id="btn-env-cost-high">把损失提高到 150 分 →</button>
+        </div>
+
+        <div class="paper-card env-story-panel env-phase" id="env-step-running" style="display:none">
+          <p class="env-chapter">模拟正在进行</p>
+          <p class="big-quote" id="env-running-title">世界正在变化……</p>
+          <p id="env-running-copy"></p>
+          <p class="note">看左边：每一代，收益较低的策略会让出一个位置。黄色关系线表示这一代正在发生的互动。</p>
+          <button class="btn btn-primary" id="btn-env-next-generation">演化一代 →</button>
+        </div>
+
+        <div class="paper-card env-story-panel env-phase" id="env-result-cost-high" style="display:none">
+          <p class="big-quote">鹰变少了。</p>
+          <p>食物没有变化，只是强硬者彼此相遇的代价更高了。</p>
+          <p class="note">冲突越昂贵，强硬仍然可能存在，但越难成为多数。</p>
+          <button class="btn btn-primary" id="btn-env-cost-low">那如果打架变便宜呢？ →</button>
+        </div>
+
+        <div class="paper-card env-story-panel env-phase" id="env-result-cost-low" style="display:none">
+          <p class="big-quote">这一次，鹰占满了群体。</p>
+          <p>食物还是 50 分，但打架只损失 50 分。强硬者遇到彼此，也不再吃亏。</p>
+          <p class="env-mini-summary">人没有变，食物也没有变。<br /><b>仅仅改变冲突代价，群体就走向了不同结果。</b></p>
+          <button class="btn btn-primary" id="btn-env-start-value">再看看食物价值的影响 →</button>
+        </div>
+
+        <div class="paper-card env-story-panel env-phase" id="env-step-value-high" style="display:none">
+          <p class="env-chapter">实验二 · 只改变食物的价值</p>
+          <p>把打架损失恢复到 100 分，并再次从 6 鹰 / 6 鸽开始。</p>
+          <p class="big-quote">如果食物从 50 分变成 80 分呢？</p>
+          <button class="btn btn-primary" id="btn-env-value-high">把食物提高到 80 分 →</button>
+        </div>
+
+        <div class="paper-card env-story-panel env-phase" id="env-result-value-high" style="display:none">
+          <p class="big-quote">值得争的东西变多，鹰也变多了。</p>
+          <p class="note">当争夺成功的回报更高，冒险就更值得。</p>
+          <button class="btn btn-primary" id="btn-env-value-low">那如果食物没那么珍贵呢？ →</button>
+        </div>
+
+        <div class="paper-card env-story-panel env-phase" id="env-result-value-low" style="display:none">
+          <p class="big-quote">收益变小，退让者更多了。</p>
+          <p>打架仍然损失 100 分，但食物只值 20 分。为了有限的收益冒险，越来越不划算。</p>
+          <button class="btn btn-primary btn-large" id="btn-env-open-sandbox">把两个开关都交给我 →</button>
+        </div>
+
+        <div class="paper-card env-story-panel env-phase env-sandbox-panel" id="env-sandbox" style="display:none">
+          <div class="env-conclusion">
+            <p class="env-chapter">现在，把两次实验放在一起</p>
+            <p class="big-quote">食物越珍贵，鹰越多；<br />冲突越昂贵，鹰越少。</p>
+            <p class="env-formula"><b>稳定的鹰比例 ≈ 食物价值 V ÷ 冲突代价 C</b></p>
+            <p class="note">当 V ≥ C 时，鹰即使遇到鹰也不再处于劣势，群体会趋向全鹰。</p>
+          </div>
+
+          <div class="env-sandbox-controls">
+            <p class="big-quote">创造一个你自己的世界。</p>
+            <p class="note">先调参数作出猜想，再运行模拟。</p>
+            <div class="env-controls">
+              <label class="env-control" for="env-value">
+                <span>食物有多值得争？</span>
+                <b class="hl-hawk"><output id="env-value-slider-output">50</output> 分</b>
+                <input id="env-value" type="range" min="10" max="120" step="10" value="50" />
+              </label>
+              <label class="env-control" for="env-cost">
+                <span>打一架有多惨？</span>
+                <b class="hl-dove"><output id="env-cost-slider-output">100</output> 分</b>
+                <input id="env-cost" type="range" min="20" max="160" step="10" value="100" />
+              </label>
+            </div>
+            <p class="note env-sandbox-preview" id="env-sandbox-preview">两只鹰相遇时，平均每只得到 -25 分。</p>
+            <div>
+              <button class="btn btn-primary" id="btn-env-run-sandbox">运行这个世界 →</button>
+              <button class="btn" id="btn-env-reset-sandbox">恢复默认参数</button>
+              <button class="btn" id="btn-replay-all">↺ 从头再玩</button>
+            </div>
+          </div>
+
+        </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="./build/main.js" defer></script>
+</body>
+</html>
