@@ -13,7 +13,7 @@ import { publish } from "../core/pubsub";
 import {
   DEFAULT_PARAMS,
   payoffMatrix,
-  playRound,
+  resolveRound,
   type Move,
 } from "../core/hawkDove";
 import { DuelScene } from "../ui/duelScene";
@@ -76,8 +76,13 @@ function choose(move: Move): void {
   if (script.rivalMove === "hawk" && !firstHawkEncounter) firstHawkEncounter = true;
   if (move === "hawk") hawkPlays++;
 
-  scene.play(move, script.rivalMove, () => {
-    const [mine, theirs] = playRound(move, script.rivalMove, DEFAULT_PARAMS);
+  scene.play(move, script.rivalMove, (winner) => {
+    const { payoffs: [mine, theirs] } = resolveRound(
+      move,
+      script.rivalMove,
+      DEFAULT_PARAMS,
+      winner === "player",
+    );
     playerTotal += mine;
     rivalTotal += theirs;
 
@@ -85,7 +90,13 @@ function choose(move: Move): void {
     floatScore(wrap, fmtScore(mine), 16, mine >= 0 ? "#3b7dbd" : "#c0392b");
     floatScore(wrap, fmtScore(theirs), 72, theirs >= 0 ? "#3b7dbd" : "#c0392b");
 
-    $("#round-remark").textContent = rivalRemark(move, script);
+    const fightResult =
+      move === "hawk" && script.rivalMove === "hawk"
+        ? winner === "player"
+          ? " 你赢得了食物，对方承担了 100 分损失。"
+          : " 对方赢得了食物，你承担了 100 分损失。"
+        : "";
+    $("#round-remark").textContent = rivalRemark(move, script) + fightResult;
     round++;
     updateScoreboard();
     $("#round-indicator").textContent = `第 ${round} / ${TOTAL_ROUNDS} 回合结束`;

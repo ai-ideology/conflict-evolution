@@ -135,13 +135,13 @@
       <div id="pop-playground">
         <h2>第二关 · 如果大家都这么做？</h2>
         <p class="step">这次我们把镜头拉远——看看一<b>整个群体</b>。</p>
-        <p class="step">这里有 12 个邻居：<b class="hl-hawk">2 只鹰</b>（红帽）和 <b class="hl-dove">10 只鸽</b>（蓝帽）。</p>
+        <p class="step">这里有 16 个邻居：<b class="hl-hawk">2 只鹰</b>（红帽）和 <b class="hl-dove">14 只鸽</b>（蓝帽）。</p>
         <p class="step">每一代，混得差的策略会被混得好的策略取代。<br />点下面的按钮，看看会发生什么。</p>
 
         <div class="paper-card step" style="padding:10px 16px">
           <canvas id="pop-canvas" style="width:100%;height:460px"></canvas>
           <div class="pop-hud">
-            <span class="note">第 <b id="gen-count">0</b> 代 · <b id="pop-ratio">2 鹰 / 10 鸽</b></span>
+            <span class="note">第 <b id="gen-count">0</b> 代 · <b id="pop-ratio">2 鹰 / 14 鸽</b></span>
             <div class="pop-bar"><div class="pop-bar-hawk" id="pop-bar-hawk"></div></div>
             <p class="note" id="pop-hint" style="margin-top:6px">点「演化一代」，看看一代之后谁混得好。</p>
           </div>
@@ -164,12 +164,12 @@
 
       <div id="pop-analysis" style="display:none">
         <h2>群体停下来了</h2>
-        <p class="step">注意看曲线——鹰的比例没有一路冲到 100%，<br />而是在 <b>一半左右</b> 来回摆动，停住了。</p>
+        <p class="step">注意看曲线——鹰的比例没有一路冲到 100%，<br />而是<b>逐代靠近一半</b>，然后不再变化。</p>
         <div class="paper-card step">
           <p class="big-quote">一种策略的成功，<br />会改变让它成功的环境。</p>
           <p>
             鹰少的时候，到处是能让它占便宜的鸽，所以鹰变多。<br />
-            可鹰越多，越容易撞上另一只鹰——打一架，双方各亏一大笔。<br />
+            可鹰越多，越容易撞上另一只鹰——真实交手时一方赢得食物，另一方承担损失，长期平均收益随之下降。<br />
             到某个比例时，当鹰和当鸽的期望收益<b>刚好打平</b>，群体就停在那里。
           </p>
           <p class="note">
@@ -191,14 +191,14 @@
   <!-- 第 4 屏：第三关 · 极端世界 -->
   <section class="slide" id="slide-extremes">
     <div class="slide-inner">
-      <h2 class="step">第三关 · 纯鹰和纯鸽真的稳定吗？</h2>
-      <p class="step">不要同时看两个世界。这一次，我们一个世界、一个步骤地试。</p>
+      <h2 class="step">第三关 · 一个突变行为，能改变整个群体吗？</h2>
+      <p class="step">从一个只有单一行为的群体开始，只放入一个不一样的行为。</p>
 
       <div class="extreme-workspace step">
         <div class="paper-card extreme-stage">
-          <canvas id="extreme-canvas" data-layout="linked-circle" data-links="all" style="width:100%;height:340px"></canvas>
+          <canvas id="extreme-canvas" data-layout="linked-circle" style="width:100%;height:340px"></canvas>
           <p class="big-quote" id="extreme-world-name">一个全是鹰的世界</p>
-          <p id="extreme-generation">第 0 代 · 12 鹰 / 0 鸽</p>
+          <p id="extreme-generation">第 0 代 · 16 鹰 / 0 鸽</p>
           <div class="pop-bar" aria-hidden="true"><div class="pop-bar-hawk" id="extreme-bar-hawk"></div></div>
           <p class="note" id="extreme-hint">先看看：当每个人都选择强硬，会发生什么？</p>
         </div>
@@ -226,7 +226,7 @@
 
           <div class="paper-card extreme-phase" id="extreme-hawk-result" style="display:none">
             <p class="big-quote">鸽没有消失，反而扩散了。</p>
-            <p>鹰越多，彼此打架越频繁；不参与打架的鸽获得了生存空间。最后，群体停在了 6 鹰 / 6 鸽。</p>
+            <p>鹰越多，彼此打架越频繁；不参与打架的鸽获得了生存空间。最后，群体停在了 8 鹰 / 8 鸽。</p>
             <button class="btn btn-primary" id="btn-extreme-switch-dove">再看一个全是鸽的世界 →</button>
           </div>
 
@@ -260,23 +260,23 @@
     </div>
   </section>
 
-  <!-- 第 5 屏：第四关 · 环境参数实验 -->
+  <!-- 第 5 屏：第四关 · 只改变打架损失 -->
   <section class="slide" id="slide-env-teaser">
     <div class="slide-inner">
-      <h2 class="step">第四关 · 换一个世界</h2>
+      <h2 class="step">第四关 · 打架更疼，群体会改变吗？</h2>
 
       <div id="env-playground">
-        <p class="step">还是刚才那 12 个邻居。这次，不改变它们——只改变它们生活的世界。</p>
+        <p class="step">还是这 16 个邻居，也还是同样的食物。<br />这一次，我们只改变一件事：<b>打一架要付出多大代价</b>。</p>
 
         <div class="env-workspace step">
         <div class="paper-card env-lab">
-          <canvas id="env-canvas" data-layout="linked-circle" data-links="all" style="width:100%;height:320px"></canvas>
+          <canvas id="env-canvas" data-layout="linked-circle" style="width:100%;height:320px"></canvas>
 
           <div class="env-result">
             <p class="big-quote" id="env-world-name">原来的世界</p>
-            <p class="env-generation" id="env-generation">现在 · 6 鹰 / 6 鸽</p>
+            <p class="env-generation" id="env-generation">现在 · 8 鹰 / 8 鸽</p>
             <div class="pop-bar" aria-hidden="true"><div class="pop-bar-hawk" id="env-bar-hawk"></div></div>
-            <p class="note" id="env-explanation">上一关里，这个群体最终停在了一半鹰、一半鸽。</p>
+            <p class="note" id="env-explanation">基准世界里，食物价值 50，打架损失 100，群体停在 8 鹰 / 8 鸽。</p>
           </div>
 
           <div class="env-parameter-strip" aria-label="当前世界参数">
@@ -293,85 +293,296 @@
         <div class="paper-card env-story-panel env-phase" id="env-step-cost-high">
           <p class="env-chapter">实验一 · 只改变打架的代价</p>
           <p class="big-quote">如果食物还是 50 分，<br />但打一架变得更惨呢？</p>
-          <p class="note">先别猜答案。把损失提高，再让同样的 6 鹰 / 6 鸽重新演化。</p>
-          <button class="btn btn-primary" id="btn-env-cost-high">把损失提高到 150 分 →</button>
+          <p class="note">先作一个猜想，再从同样的 8 鹰 / 8 鸽出发，一代一代看。</p>
+          <button class="btn btn-primary" id="btn-env-cost-high">把损失提高到 200 分 →</button>
         </div>
 
         <div class="paper-card env-story-panel env-phase" id="env-step-running" style="display:none">
           <p class="env-chapter">模拟正在进行</p>
           <p class="big-quote" id="env-running-title">世界正在变化……</p>
           <p id="env-running-copy"></p>
-          <p class="note">看左边：每一代，收益较低的策略会让出一个位置。黄色关系线表示这一代正在发生的互动。</p>
+          <p class="note">看左边：每一代只改变一个席位；亮起的连线表示这一代正在比较的互动。</p>
           <button class="btn btn-primary" id="btn-env-next-generation">演化一代 →</button>
         </div>
 
         <div class="paper-card env-story-panel env-phase" id="env-result-cost-high" style="display:none">
           <p class="big-quote">鹰变少了。</p>
-          <p>食物没有变化，只是强硬者彼此相遇的代价更高了。</p>
-          <p class="note">冲突越昂贵，强硬仍然可能存在，但越难成为多数。</p>
+          <p>损失提高到 200 分后，群体从 8 鹰 / 8 鸽走到了 <b>4 鹰 / 12 鸽</b>。</p>
+          <p class="note">食物没变、人也没变；只是强硬者彼此相遇的代价更高了。</p>
           <button class="btn btn-primary" id="btn-env-cost-low">那如果打架变便宜呢？ →</button>
         </div>
 
         <div class="paper-card env-story-panel env-phase" id="env-result-cost-low" style="display:none">
-          <p class="big-quote">这一次，鹰占满了群体。</p>
-          <p>食物还是 50 分，但打架只损失 50 分。强硬者遇到彼此，也不再吃亏。</p>
+          <p class="big-quote">这一次，鹰变多了。</p>
+          <p>损失降到 80 分后，群体从 8 鹰 / 8 鸽走到了 <b>10 鹰 / 6 鸽</b>。</p>
           <p class="env-mini-summary">人没有变，食物也没有变。<br /><b>仅仅改变冲突代价，群体就走向了不同结果。</b></p>
-          <button class="btn btn-primary" id="btn-env-start-value">再看看食物价值的影响 →</button>
+          <button class="btn btn-primary" id="btn-env-start-value">把三个世界放在一起 →</button>
         </div>
 
-        <div class="paper-card env-story-panel env-phase" id="env-step-value-high" style="display:none">
-          <p class="env-chapter">实验二 · 只改变食物的价值</p>
-          <p>把打架损失恢复到 100 分，并再次从 6 鹰 / 6 鸽开始。</p>
-          <p class="big-quote">如果食物从 50 分变成 80 分呢？</p>
-          <button class="btn btn-primary" id="btn-env-value-high">把食物提高到 80 分 →</button>
-        </div>
-
-        <div class="paper-card env-story-panel env-phase" id="env-result-value-high" style="display:none">
-          <p class="big-quote">值得争的东西变多，鹰也变多了。</p>
-          <p class="note">当争夺成功的回报更高，冒险就更值得。</p>
-          <button class="btn btn-primary" id="btn-env-value-low">那如果食物没那么珍贵呢？ →</button>
-        </div>
-
-        <div class="paper-card env-story-panel env-phase" id="env-result-value-low" style="display:none">
-          <p class="big-quote">收益变小，退让者更多了。</p>
-          <p>打架仍然损失 100 分，但食物只值 20 分。为了有限的收益冒险，越来越不划算。</p>
-          <button class="btn btn-primary btn-large" id="btn-env-open-sandbox">把两个开关都交给我 →</button>
-        </div>
-
-        <div class="paper-card env-story-panel env-phase env-sandbox-panel" id="env-sandbox" style="display:none">
+        <div class="paper-card env-story-panel env-phase" id="env-sandbox" style="display:none">
           <div class="env-conclusion">
-            <p class="env-chapter">现在，把两次实验放在一起</p>
-            <p class="big-quote">食物越珍贵，鹰越多；<br />冲突越昂贵，鹰越少。</p>
-            <p class="env-formula"><b>稳定的鹰比例 ≈ 食物价值 V ÷ 冲突代价 C</b></p>
-            <p class="note">当 V ≥ C 时，鹰即使遇到鹰也不再处于劣势，群体会趋向全鹰。</p>
+            <p class="env-chapter">三个世界，只有打架损失不同</p>
+            <p class="big-quote">损失 80 → 10 鹰<br />损失 100 → 8 鹰<br />损失 200 → 4 鹰</p>
+            <p><b>冲突越昂贵，强硬越难成为多数。</b></p>
+            <p class="env-formula"><b>鹰的稳定比例 ≈ V ÷ C</b></p>
+            <p class="note">这里始终把食物固定为 50 分，并把损失限制在高于食物价值的范围内。这样我们只观察“冲突代价”这一个变量。</p>
+          </div>
+          <button class="btn btn-primary" id="btn-to-scarcity">进入资源不足的世界 →</button>
+          <button class="btn" id="btn-replay-all">↺ 从头再玩</button>
+        </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 第 6 屏：第五关 · 资源不足 -->
+  <section class="slide" id="slide-ecology">
+    <div class="slide-inner">
+      <h2 class="step">第五关 · 当食物不够所有人活下去</h2>
+      <p class="step">这一关只改变<b>每天出现的食物份数</b>。从现在起，收益不再清零，而会进入每个人的生存储备。</p>
+
+      <div id="eco-playground" class="eco-workspace step">
+        <div class="paper-card eco-stage">
+          <canvas id="eco-canvas" style="width:100%;height:390px"></canvas>
+          <div class="eco-hud">
+            <b id="eco-day">第 0 天</b>
+            <b id="eco-alive">存活 16 / 16</b>
+            <b id="eco-reserve">总储备 2400</b>
+          </div>
+          <div class="eco-cycle" id="eco-cycle" aria-label="一天的阶段">
+            <span data-phase="day">白天争夺</span>
+            <span data-phase="night">夜间消耗</span>
+            <span data-phase="selection">同时淘汰</span>
+            <span data-phase="birth">最多一次繁衍</span>
+          </div>
+          <p class="note" id="eco-note">以前每代会重新计算；这一关开始，每个人都有会累积的生存储备。</p>
+        </div>
+
+        <div class="eco-phase-slot">
+          <div class="paper-card eco-phase" id="eco-intro">
+            <p class="env-chapter">新规则 · 储备会留下</p>
+            <p class="big-quote">每个人先带着 150 点食物生活。</p>
+            <p>白天获得的食物会放进粮袋，打架造成的损失也不会在下一天消失。</p>
+            <button class="btn btn-primary" id="btn-eco-start">带上储备，开始生活 →</button>
           </div>
 
-          <div class="env-sandbox-controls">
-            <p class="big-quote">创造一个你自己的世界。</p>
-            <p class="note">先调参数作出猜想，再运行模拟。</p>
-            <div class="env-controls">
-              <label class="env-control" for="env-value">
-                <span>食物有多值得争？</span>
-                <b class="hl-hawk"><output id="env-value-slider-output">50</output> 分</b>
-                <input id="env-value" type="range" min="10" max="120" step="10" value="50" />
-              </label>
-              <label class="env-control" for="env-cost">
-                <span>打一架有多惨？</span>
-                <b class="hl-dove"><output id="env-cost-slider-output">100</output> 分</b>
-                <input id="env-cost" type="range" min="20" max="160" step="10" value="100" />
-              </label>
-            </div>
-            <p class="note env-sandbox-preview" id="env-sandbox-preview">两只鹰相遇时，平均每只得到 -25 分。</p>
-            <div>
-              <button class="btn btn-primary" id="btn-env-run-sandbox">运行这个世界 →</button>
-              <button class="btn" id="btn-env-reset-sandbox">恢复默认参数</button>
-              <button class="btn" id="btn-replay-all">↺ 从头再玩</button>
-            </div>
+          <div class="paper-card eco-phase" id="eco-full-day" style="display:none">
+            <p class="env-chapter">先认识一个完整的日夜</p>
+            <p class="big-quote">今天有 8 份食物，刚好够 16 人组成 8 对。</p>
+            <p class="note">先只过白天。夜晚不会被这个按钮偷偷带过。</p>
+            <button class="btn btn-primary" id="btn-eco-full-day">过一个食物充足的白天 →</button>
           </div>
 
+          <div class="paper-card eco-phase" id="eco-running" style="display:none">
+            <p class="env-chapter">当天正在发生</p>
+            <p class="big-quote" id="eco-running-title">白天正在进行……</p>
+            <p id="eco-running-copy">当前配对会依次亮起。</p>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-full-day-done" style="display:none">
+            <p class="big-quote">食物已经进入各自的粮袋。</p>
+            <p>储备没有清零。但一天还没有结束。</p>
+            <button class="btn btn-primary" id="btn-eco-full-night">让夜晚来临 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-reduce-food" style="display:none">
+            <p class="env-chapter">只改变资源供应</p>
+            <p class="big-quote">如果每天少两份食物呢？</p>
+            <p>拿走两份后，每天最多只有 12 人得到觅食机会，另外 4 人会空手。</p>
+            <button class="btn btn-primary" id="btn-eco-reduce">亲手拿走 2 份食物 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-scarce-ready" style="display:none">
+            <p class="big-quote">现在只剩 6 份食物。</p>
+            <p class="note">食物已经减少，但群体尚未运行。先看看今天谁能抽到机会。</p>
+            <button class="btn btn-primary" id="btn-eco-scarce-day">开始稀缺世界的第一天 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-scarce-day-done" style="display:none">
+            <p class="big-quote">有人觅食，有人空手。</p>
+            <p>只有进入粮袋的储备能跨日；没被使用的公共食物会在日落时消失。</p>
+            <button class="btn btn-primary" id="btn-eco-scarce-night">结算这个夜晚 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-observe-more" style="display:none">
+            <p class="big-quote">库存开始记录每个人的历史。</p>
+            <p id="eco-observe-copy">有人开始进入危险区，但暂时还没有空席。</p>
+            <p class="note">你已经看懂一个日夜。接下来普通日常会连续播放，遇到首次淘汰自动暂停。</p>
+            <button class="btn btn-primary" id="btn-eco-observe">继续观察，遇到淘汰停下 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-first-elimination" style="display:none">
+            <p class="env-chapter">第一次淘汰</p>
+            <p class="big-quote"><b id="eco-eliminated-count">1</b> 个粮袋归零，圆环留下了空席。</p>
+            <p>这不是一轮暂时落后，而是过去几天的机会与损失累积后的结果。</p>
+            <button class="btn btn-primary" id="btn-eco-enable-birth">如果群体也能繁衍呢？ →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-reproduction-rule" style="display:none">
+            <p class="env-chapter">单独安装繁衍规则</p>
+            <p>有空席且幸存者储备达到 200 时，最高储备者可以支付 100：后代带 50 入场，另外 50 是繁衍消耗。</p>
+            <p class="note">每天最多出生一个；新生者从第二天开始参与。安装规则本身不会立刻生孩子。</p>
+            <button class="btn btn-primary" id="btn-eco-run-birth">使用同一随机种子继续生活 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-first-birth" style="display:none">
+            <p class="env-chapter">第一次出生</p>
+            <p class="big-quote">第 <b id="eco-parent-seat">1</b> 席的幸存者，填补了第 <b id="eco-child-seat">2</b> 席空位。</p>
+            <p>亲代真实减少 100，后代获得 50；没有凭空创造食物。</p>
+            <p class="note">现在我们已经看懂完整循环，可以公平比较三种资源供应。</p>
+            <button class="btn btn-primary" id="btn-eco-compare">比较 8、6、4 份食物 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-compare-8" style="display:none">
+            <p class="env-chapter">公平对照 · 世界一</p>
+            <p class="big-quote">每天 8 份食物，生活 8 天。</p>
+            <p>16 人、每人 150 储备、初始 8 鹰 / 8 鸽、繁衍规则和随机种子全部固定；运行中比例会随淘汰和出生变化。</p>
+            <button class="btn btn-primary" id="btn-eco-run-8">运行 8 份食物的世界 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-compare-8-result" style="display:none">
+            <p class="env-chapter">8 份食物 · 第 8 天</p>
+            <div class="eco-result-stamp">
+              <b><span id="eco-result-8-alive">0</span> 人存活</b>
+              <span>总储备 <b id="eco-result-8-reserve">0</b></span>
+              <span>鹰鹰冲突 <b id="eco-result-8-fights">0</b> 次</span>
+            </div>
+            <button class="btn btn-primary" id="btn-eco-run-6">用相同种子运行 6 份世界 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-compare-6-result" style="display:none">
+            <p class="env-chapter">6 份食物 · 第 8 天</p>
+            <div class="eco-result-stamp">
+              <b><span id="eco-result-6-alive">0</span> 人存活</b>
+              <span>总储备 <b id="eco-result-6-reserve">0</b></span>
+              <span>鹰鹰冲突 <b id="eco-result-6-fights">0</b> 次</span>
+            </div>
+            <button class="btn btn-primary" id="btn-eco-run-4">最后运行 4 份世界 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-compare-4-result" style="display:none">
+            <p class="env-chapter">4 份食物 · 第 8 天</p>
+            <div class="eco-result-stamp">
+              <b><span id="eco-result-4-alive">0</span> 人存活</b>
+              <span>总储备 <b id="eco-result-4-reserve">0</b></span>
+              <span>鹰鹰冲突 <b id="eco-result-4-fights">0</b> 次</span>
+            </div>
+            <button class="btn btn-primary" id="btn-eco-show-comparison">把三个结果放在一起 →</button>
+          </div>
+
+          <div class="paper-card eco-phase" id="eco-comparison-final" style="display:none">
+            <p class="env-chapter">相同世界 · 只改变每天的食物</p>
+            <div class="eco-comparison-list">
+              <p><b>8 份</b><span id="eco-final-8"></span></p>
+              <p><b>6 份</b><span id="eco-final-6"></span></p>
+              <p><b>4 份</b><span id="eco-final-4"></span></p>
+            </div>
+            <p class="env-mini-summary"><b>在这组参数和这条轨迹中，资源越少，群体保留下来的储备和人数越少；冲突还会烧掉本已稀缺的储备。</b></p>
+            <p class="note">鹰鹰冲突次数还会受参与配对和存活人数影响，所以“次数较少”不等于处境更和平。这是同一随机种子下的一次可回放对照，不是永远固定的人口或鹰鸽比例。</p>
+            <button class="btn btn-primary" id="btn-to-learning">如果个体能从经历中学习呢？ →</button>
+          </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide-learning">
+    <div class="slide-inner">
+      <header class="env-header reveal">
+        <p class="eyebrow">第六关 · 学习能力</p>
+        <h2>当“鹰”与“鸽”不再是固定身份</h2>
+        <p>这一次不改变食物和损失，只问：个体记住自己的经历后，群体会怎样？</p>
+      </header>
+      <div class="eco-workspace learn-workspace reveal" id="learning-playground">
+        <div class="paper-card eco-stage learn-stage">
+          <canvas id="learning-canvas" aria-label="十六人学习群体动态演化"></canvas>
+          <div class="eco-hud learn-hud">
+            <span id="learning-day">第 0 天</span>
+            <span id="learning-alive">存活 16 / 16</span>
+            <span id="learning-reserve">总储备 2400</span>
+            <span id="learning-actions">强硬行动 0 / 0</span>
+          </div>
+          <div class="learn-legend">
+            <span><i class="learn-dot filled"></i> 红点越多，下一次越可能强硬</span>
+            <span>帽子只在本次行动时出现</span>
+          </div>
+          <p class="note eco-note" id="learning-note">先建立一个不会学习的对照世界。</p>
         </div>
-        </div>
+        <aside class="learn-side">
+          <nav class="learn-steps" aria-label="第六关进度">
+            <span data-learning-step="baseline">固定世界</span>
+            <span data-learning-step="remove-hats">摘下帽子</span>
+            <span data-learning-step="person">一个人</span>
+            <span data-learning-step="group">整个群体</span>
+            <span data-learning-step="compare">比较</span>
+          </nav>
+
+          <div class="paper-card learn-phase" id="learn-intro">
+            <p class="env-chapter">先留下一把尺子</p>
+            <p class="big-quote">如果大家永远执行原来的策略，三天后会怎样？</p>
+            <p>16 人、每天 6 份食物、相同储备。每天结束都停下来，不让结果一闪而过。</p>
+            <button class="btn btn-primary" id="btn-learning-start">先看不会学习的三天 →</button>
+          </div>
+
+          <div class="paper-card learn-phase" id="learn-baseline" style="display:none">
+            <p class="env-chapter">对照世界 · 固定策略</p>
+            <p class="big-quote" id="learn-baseline-copy">每个人一直戴着原来的帽子，经历不会改变下一次选择。</p>
+            <button class="btn btn-primary" id="btn-learning-fixed-day">播放第 1 天 →</button>
+          </div>
+
+          <div class="paper-card learn-phase" id="learn-baseline-result" style="display:none">
+            <p class="env-chapter">固定世界跑完了</p>
+            <p id="learn-baseline-result-copy"></p>
+            <p class="learn-stat" id="learn-baseline-result-stat"></p>
+            <button class="btn btn-primary" id="btn-learning-remove-hats">倒带，并摘下永久帽子 →</button>
+          </div>
+
+          <div class="paper-card learn-phase" id="learn-person" style="display:none">
+            <p class="env-chapter">身份变成一次选择</p>
+            <p class="big-quote" id="learn-hats-copy">帽子不再表示“他是谁”，只表示“这一轮怎么做”。</p>
+            <p>先别急着看整个群体。我们靠近一个人，看清一次学习。</p>
+            <button class="btn btn-primary" id="btn-learning-person">看看一个人的记忆 →</button>
+          </div>
+
+          <div class="paper-card learn-phase" id="learn-person-memory" style="display:none">
+            <p class="env-chapter">记忆特写</p>
+            <p class="big-quote" id="learn-person-memory-copy">记忆还是空的。</p>
+            <p class="learn-stat" id="learn-person-before"></p>
+            <button class="btn btn-primary" id="btn-learning-person-conflict">让他经历一次强硬冲突 →</button>
+          </div>
+
+          <div class="paper-card learn-phase" id="learn-person-result" style="display:none">
+            <p class="env-chapter">经历留下了痕迹</p>
+            <p class="big-quote" id="learn-person-after"></p>
+            <p class="note">这是局部特写，不计入接下来的群体对照。下一步会再次倒带。</p>
+            <button class="btn btn-primary" id="btn-learning-person-continue">让整个群体都能学习 →</button>
+          </div>
+
+          <div class="paper-card learn-phase" id="learn-group" style="display:none">
+            <p class="env-chapter">学习世界 · 每天停一次</p>
+            <p class="big-quote" id="learn-group-copy">每个人只记住自己真正做过的选择和得到的收益。</p>
+            <button class="btn btn-primary" id="btn-learning-group-day">播放第 1 天 →</button>
+          </div>
+
+          <div class="paper-card learn-phase" id="learn-group-result" style="display:none">
+            <p class="env-chapter">学习世界跑完了</p>
+            <p id="learn-group-result-copy"></p>
+            <p class="learn-stat" id="learn-group-result-stat"></p>
+            <button class="btn btn-primary" id="btn-learning-show-final">把两个世界放在一起 →</button>
+          </div>
+
+          <div class="paper-card learn-phase" id="learn-final" style="display:none">
+            <p class="env-chapter">同一起点 · 学习开关不同</p>
+            <div class="learn-compare">
+              <div><b>不会学习</b><span id="learn-final-fixed"></span></div>
+              <div><b>会学习</b><span id="learn-final-learning"></span></div>
+            </div>
+            <p class="env-mini-summary" id="learn-final-copy"></p>
+            <p class="note">这里只说明当前参数下的一条可回放轨迹，不代表学习在所有环境里都会带来合作。</p>
+            <button class="btn" id="btn-learning-replay">重新演一遍</button>
+          </div>
+        </aside>
       </div>
     </div>
   </section>

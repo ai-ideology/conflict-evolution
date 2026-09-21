@@ -1,5 +1,5 @@
 /**
- * 第三关 · 两个极端世界
+ * 第三关 · 一个突变行为如何改变极端群体
  * 同一个圆形群体舞台，严格按“观察 → 投放 → 一代一停 → 验证”推进。
  */
 
@@ -9,7 +9,7 @@ import { PopulationScene } from "../ui/populationScene";
 import { registerSlide } from "./Slide";
 import { $, revealSteps, clearTimers } from "./helpers";
 
-const COUNT = 12;
+const COUNT = 16;
 const P = DEFAULT_PARAMS;
 
 type World = "hawk" | "dove";
@@ -100,7 +100,7 @@ function evolveOneGeneration(world: World): void {
       return;
     }
 
-    if (hawks === 6) {
+    if (hawks === 8) {
       $(title).textContent = "鹰和鸽的收益打平了。";
       $(copy).textContent = "但一次打平还不能证明稳定。再演化一代，看看比例会不会改变。";
       ($(button) as HTMLButtonElement).textContent = "再验证一代 →";

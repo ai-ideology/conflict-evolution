@@ -85,8 +85,12 @@ export class DuelScene {
   }
 
 
-  /** 播放对决动画，结束后回调 */
-  play(playerMove: Move, rivalMove: Move, onResolved: () => void): void {
+  /** 播放对决动画，结束后回调。鹰鹰对决会返回真实赢家。 */
+  play(
+    playerMove: Move,
+    rivalMove: Move,
+    onResolved: (winner: "player" | "rival" | null) => void,
+  ): void {
     this.clearTimers();
     this.reset();
     this.player.kind = playerMove;
@@ -106,17 +110,18 @@ export class DuelScene {
         t(200, () => this.tweenTo(R, "flee", 1, 500, easeOutCubic));
         t(450, () => this.tweenTo(P, "advance", 1, 750, easeInOutQuad));
         t(1250, () => { P.face = "happy"; P.holdingFood = true; });
-        t(1650, onResolved);
+        t(1650, () => onResolved(null));
         break;
       case "dove-hawk":
         t(80, () => { R.face = "angry"; P.face = "sad"; });
         t(200, () => this.tweenTo(P, "flee", 1, 500, easeOutCubic));
         t(450, () => this.tweenTo(R, "advance", 1, 750, easeInOutQuad));
         t(1250, () => { R.face = "happy"; R.holdingFood = true; });
-        t(1650, onResolved);
+        t(1650, () => onResolved(null));
         break;
       case "hawk-hawk":
-        // 双方冲向中间 → 吵架云 → 各自挂彩弹开
+        // 双方冲向中间 → 吵架云 → 产生真实赢家和输家
+        const playerWins = Math.random() < 0.5;
         t(80, () => { P.face = "angry"; R.face = "angry"; });
         t(150, () => {
           this.tweenTo(P, "advance", 0.9, 450, easeInOutQuad);
@@ -131,12 +136,14 @@ export class DuelScene {
           this.scuffling = false;
           P.hidden = false;
           R.hidden = false;
-          P.face = "dizzy";
-          R.face = "dizzy";
+          P.face = playerWins ? "happy" : "dizzy";
+          R.face = playerWins ? "dizzy" : "happy";
+          P.holdingFood = playerWins;
+          R.holdingFood = !playerWins;
           this.tweenTo(P, "advance", 0.05, 380, easeOutCubic);
           this.tweenTo(R, "advance", 0.05, 380, easeOutCubic);
         });
-        t(2150, onResolved);
+        t(2150, () => onResolved(playerWins ? "player" : "rival"));
         break;
       default:
         // dove-dove：互相客气地让，最后一起分享
@@ -149,7 +156,7 @@ export class DuelScene {
           this.tweenTo(R, "advance", 0.55, 450, easeInOutQuad);
         });
         t(1850, () => { P.face = "happy"; R.face = "happy"; });
-        t(2200, onResolved);
+        t(2200, () => onResolved(null));
         break;
     }
   }

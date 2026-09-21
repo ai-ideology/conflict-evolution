@@ -14,6 +14,8 @@ import "./slides/slide2";
 import "./slides/slide3";
 import "./slides/slide4";
 import "./slides/slide5";
+import "./slides/slide6";
+import "./slides/slide7";
 
 const SLIDE_ORDER = [
   "slide-title",
@@ -22,6 +24,8 @@ const SLIDE_ORDER = [
   "slide-population",
   "slide-extremes",
   "slide-env-teaser",
+  "slide-ecology",
+  "slide-learning",
 ];
 
 const LEVEL_NAMES = [
@@ -29,8 +33,10 @@ const LEVEL_NAMES = [
   "规则说明",
   "第一关 · 你会争还是让",
   "第二关 · 如果大家都这么做",
-  "第三关 · 纯鹰纯鸽稳定吗",
-  "第四关 · 换一个世界",
+  "第三关 · 一个突变行为",
+  "第四关 · 改变打架损失",
+  "第五关 · 当食物不够",
+  "第六关 · 当个体开始学习",
 ];
 
 const show = new Slideshow();

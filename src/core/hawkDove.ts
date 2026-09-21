@@ -19,6 +19,11 @@ export interface PayoffParams {
 
 export const DEFAULT_PARAMS: PayoffParams = { value: 50, cost: 100 };
 
+export interface ResolvedRound {
+  payoffs: [number, number];
+  winner: "self" | "other" | null;
+}
+
 /** 双方收益 [自己, 对手] */
 export function playRound(self: Move, other: Move, p: PayoffParams): [number, number] {
   if (self === "hawk" && other === "hawk") {
@@ -28,6 +33,24 @@ export function playRound(self: Move, other: Move, p: PayoffParams): [number, nu
   if (self === "hawk" && other === "dove") return [p.value, 0];
   if (self === "dove" && other === "hawk") return [0, p.value];
   return [p.value / 2, p.value / 2];
+}
+
+/**
+ * 一次真实对局的结算。
+ * playRound 用于长期期望；这里的鹰鹰相遇必须产生真实赢家和输家。
+ */
+export function resolveRound(
+  self: Move,
+  other: Move,
+  p: PayoffParams,
+  selfWins = Math.random() < 0.5,
+): ResolvedRound {
+  if (self === "hawk" && other === "hawk") {
+    return selfWins
+      ? { payoffs: [p.value, -p.cost], winner: "self" }
+      : { payoffs: [-p.cost, p.value], winner: "other" };
+  }
+  return { payoffs: playRound(self, other, p), winner: null };
 }
 
 /** 自己一方在四种对局下的收益矩阵（行=自己，列=对手） */
@@ -64,6 +87,35 @@ export function doveFitness(pop: Population, p: PayoffParams): number {
 export function essHawkRatio(p: PayoffParams): number {
   if (p.cost <= 0) return 1;
   return Math.min(1, p.value / p.cost);
+}
+
+/**
+ * 教学模式的一代：比较当前比例下两种策略的期望收益，
+ * 每代只让一个席位从低收益策略转向高收益策略。
+ */
+export function discreteGenerationStep(
+  hawkCount: number,
+  populationSize: number,
+  p: PayoffParams,
+  epsilon = 1e-9,
+): number {
+  if (!Number.isInteger(populationSize) || populationSize <= 0) {
+    throw new Error("populationSize 必须是正整数");
+  }
+  const current = Math.min(populationSize, Math.max(0, Math.round(hawkCount)));
+  const pop = { hawkRatio: current / populationSize };
+  const difference = hawkFitness(pop, p) - doveFitness(pop, p);
+  if (Math.abs(difference) <= epsilon) return current;
+  if (difference > 0) return Math.min(populationSize, current + 1);
+  return Math.max(0, current - 1);
+}
+
+/** 理论比例在有限教学席位上的最近整数表示。 */
+export function nearestEquilibriumCount(populationSize: number, p: PayoffParams): number {
+  if (!Number.isInteger(populationSize) || populationSize <= 0) {
+    throw new Error("populationSize 必须是正整数");
+  }
+  return Math.round(essHawkRatio(p) * populationSize);
 }
 
 /**

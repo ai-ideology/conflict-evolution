@@ -18,7 +18,7 @@ export type PeepFace = "calm" | "angry" | "happy" | "sad" | "dizzy";
 export interface PeepPose {
   dir: 1 | -1;
   face?: PeepFace;
-  hat: HatColor;
+  hat?: HatColor | null;
   armsUp?: boolean;
   holdingFood?: boolean;
   walkPhase?: number | null;
@@ -231,7 +231,7 @@ export function drawPeep(
   sellipse(c, 0, headY, headR, headR, SKIN);
 
   // 帽子（平顶桶帽，红=鹰 / 蓝=鸽，绒球垂在朝向侧）
-  drawHat(c, headY - headR, s, pose.hat, pose.dir);
+  if (pose.hat) drawHat(c, headY - headR, s, pose.hat, pose.dir);
 
   // 五官（侧脸时向朝向偏移）
   const lookX = pose.frontFace ? 0 : pose.dir * 6 * s;

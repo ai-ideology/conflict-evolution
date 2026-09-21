@@ -312,6 +312,126 @@ h1, h2, h3, h4 {
   display: block;
 }
 
+/* 第六关：固定世界与学习世界共用一个圆环舞台，右侧只保留当前分镜。 */
+#slide-learning .slide-inner { max-width: 1180px; }
+
+#slide-learning {
+  height: 100vh;
+  min-height: 680px;
+  padding: 2vh 20px 68px;
+  overflow: hidden;
+}
+
+body:has(#slide-learning.active) { overflow-y: hidden; }
+
+#slide-learning .env-header { margin-bottom: .45rem; }
+
+#slide-learning .learn-workspace {
+  grid-template-columns: minmax(0, 1.45fr) minmax(330px, .8fr);
+  align-items: stretch;
+}
+
+.learn-stage {
+  min-height: min(61vh, 610px);
+  display: flex;
+  flex-direction: column;
+}
+
+#learning-canvas {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 330px;
+}
+
+.learn-hud {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.learn-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+  margin: .45rem 0 0;
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+.learn-dot {
+  display: inline-block;
+  width: .55rem;
+  height: .55rem;
+  border-radius: 50%;
+  background: rgba(65, 64, 62, .18);
+}
+
+.learn-dot.filled { background: var(--hawk); }
+
+.learn-side {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+}
+
+.learn-steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: .25rem;
+}
+
+.learn-steps span {
+  padding: .4rem .15rem;
+  border-bottom: 3px solid rgba(65, 64, 62, .16);
+  color: var(--muted);
+  font-size: .78rem;
+  text-align: center;
+}
+
+.learn-steps span.active {
+  border-color: var(--hawk);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.learn-phase {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: clamp(1.1rem, 2vw, 1.75rem);
+}
+
+.learn-phase .btn { margin-top: 1rem; }
+
+.learn-stat {
+  padding: .75rem;
+  border: 1px dashed rgba(65, 64, 62, .35);
+  background: rgba(238, 228, 205, .35);
+  line-height: 1.7;
+}
+
+.learn-compare {
+  display: grid;
+  gap: .65rem;
+  margin: 1rem 0;
+}
+
+.learn-compare > div {
+  display: grid;
+  gap: .25rem;
+  padding: .75rem;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+.learn-compare > div:last-child { border-color: var(--dove); }
+.learn-compare span { color: var(--muted); line-height: 1.55; }
+
+@media (max-width: 900px) {
+  #slide-learning .learn-workspace { grid-template-columns: 1fr; }
+  .learn-stage { min-height: 520px; }
+  #learning-canvas { min-height: 330px; }
+}
+
 /* ---------- 第三关：单舞台、逐步极端实验 ---------- */
 
 #slide-extremes {
@@ -558,6 +678,130 @@ h1, h2, h3, h4 {
   font-size: 1.25rem;
 }
 
+/* ---------- 第五关：资源与生存储备 ---------- */
+
+#slide-ecology {
+  padding-top: 2.2vh;
+  padding-bottom: 8vh;
+}
+
+#slide-ecology .slide-inner {
+  max-width: 1220px;
+}
+
+#slide-ecology h2 {
+  margin-bottom: 2px;
+}
+
+.eco-workspace {
+  display: grid;
+  grid-template-columns: minmax(620px, 1.55fr) minmax(340px, 0.82fr);
+  gap: 22px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.eco-stage {
+  width: 100%;
+  margin: 0;
+  padding: 6px 18px 12px;
+}
+
+.eco-stage canvas {
+  display: block;
+  height: min(380px, 43vh) !important;
+  min-height: 290px;
+}
+
+.eco-hud {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0 auto 7px;
+  font-family: var(--font-hand);
+}
+
+.eco-hud b {
+  padding: 5px 8px;
+  background: rgba(236, 228, 211, 0.55);
+  border-radius: var(--radius-hand-2);
+}
+
+.eco-cycle {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin: 7px 0;
+  color: var(--ink-light);
+  font-size: 0.8rem;
+}
+
+.eco-cycle span {
+  padding: 4px 3px;
+  border-bottom: 3px solid rgba(65, 64, 62, 0.16);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.eco-cycle span.active {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
+  font-weight: bold;
+}
+
+.eco-stage #eco-note {
+  min-height: 1.6em;
+  margin: 6px 0 0;
+}
+
+.eco-phase-slot {
+  min-width: 0;
+}
+
+.eco-phase {
+  width: 100%;
+  margin: 0;
+  padding: 22px 20px;
+}
+
+.eco-phase .big-quote {
+  margin: 10px auto 14px;
+}
+
+.eco-result-stamp {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 14px auto 18px;
+  padding: 14px 18px;
+  background: rgba(236, 228, 211, 0.55);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-hand-3);
+  font-family: var(--font-hand);
+  font-size: 1.08rem;
+}
+
+.eco-comparison-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.eco-comparison-list p {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  align-items: center;
+  margin: 0;
+  padding: 7px 10px;
+  text-align: left;
+  background: rgba(236, 228, 211, 0.48);
+  border-radius: var(--radius-hand-2);
+}
+
+.eco-comparison-list b {
+  color: var(--hawk);
+  font-family: var(--font-hand);
+}
+
 
 
 /* ---------- 底部关卡导航 ---------- */
@@ -665,16 +909,28 @@ h1, h2, h3, h4 {
     grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.85fr);
     gap: 16px;
   }
+  .eco-workspace {
+    grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.82fr);
+    gap: 16px;
+  }
 }
 
 @media (max-width: 760px) {
   #slide-env-teaser .slide-inner { max-width: 720px; }
   .env-workspace { grid-template-columns: 1fr; }
   .env-lab canvas { height: 330px !important; min-height: 0; }
+  .eco-workspace { grid-template-columns: 1fr; }
+  .eco-stage canvas { height: 330px !important; min-height: 0; }
 }
 
 @media (max-width: 560px) {
   .env-workspace { gap: 14px; }
   .env-lab canvas { height: 280px !important; }
   .env-story-panel { padding: 18px 14px; }
+  .eco-workspace { gap: 14px; }
+  .eco-stage canvas { height: 280px !important; }
+  .eco-hud { grid-template-columns: 1fr 1fr; }
+  .eco-hud b:last-child { grid-column: 1 / -1; }
+  .eco-cycle { grid-template-columns: 1fr 1fr; }
+  .eco-phase { padding: 18px 14px; }
 }

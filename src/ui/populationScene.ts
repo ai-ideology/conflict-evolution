@@ -1,8 +1,7 @@
 /**
- * 群体场景（圆形锦标赛版）——参考 ncase《信任的进化》的锦标赛画面：
- * 小人围成一个圈，两两之间有灰色连线（表示每代都要两两对局）。
- * 演化一代 = 逐个高亮每个个体（黄色辐射连线）并累计其总分；
- * 最后得分最低者换成得分最高者的帽子。
+ * 第一至第四关的16席圆环场景。
+ * 只点亮当前代表性配对，不绘制永久全连接网；演化一代后最多一人换帽。
+ * 第五关起的库存、空席、淘汰与出生由独立生态场景承载。
  */
 
 import type { SketchContext } from "./sketchAnimals";
@@ -13,6 +12,11 @@ import {
   type Move,
   type PayoffParams,
 } from "../core/hawkDove";
+import {
+  createSeededRandom,
+  shuffleWith,
+  type RandomSource,
+} from "../core/random";
 
 interface Agent {
   kind: Move;
@@ -37,7 +41,6 @@ export interface TournamentResult {
 }
 
 const INK = "#41403e";
-const LINK = "rgba(65,64,62,0.13)";
 const LINK_ACTIVE = "#d9a441";
 
 export class PopulationScene {
@@ -48,8 +51,11 @@ export class PopulationScene {
   private scores: number[] = [];
   /** 当前正在被「聚光」的个体（锦标赛逐个结算用） */
   private focusIdx = -1;
+  /** 当前抽样展示的配对；不绘制永久全连接网。 */
+  private activePair: [number, number] | null = null;
   private busy = false;
   private timers: number[] = [];
+  private simulationRandom: RandomSource = createSeededRandom(20260921);
 
   constructor(private canvas: HTMLCanvasElement) {
     const ctx = canvas.getContext("2d");
@@ -65,13 +71,19 @@ export class PopulationScene {
     return this.busy;
   }
 
-  setup(count: number, initialHawks: number, seedRandom = true): void {
+  setup(
+    count: number,
+    initialHawks: number,
+    shuffleKinds = true,
+    seed = 20260921,
+  ): void {
     this.clearTimers();
+    this.simulationRandom = createSeededRandom(seed);
     this.agents = [];
     this.scores = new Array(count).fill(0);
     const kinds: Move[] = [];
     for (let i = 0; i < count; i++) kinds.push(i < initialHawks ? "hawk" : "dove");
-    if (seedRandom) shuffle(kinds);
+    if (shuffleKinds) shuffleWith(kinds, this.simulationRandom);
     const t = this.now();
     for (const kind of kinds) {
       this.agents.push({
@@ -86,6 +98,7 @@ export class PopulationScene {
       });
     }
     this.focusIdx = -1;
+    this.activePair = null;
     this.busy = false;
     this.startLoop();
   }
@@ -129,7 +142,12 @@ export class PopulationScene {
       this.timers.push(
         window.setTimeout(() => {
           this.focusIdx = i;
-          for (let k = 0; k < n; k++) this.agents[k]!.dimmed = k !== i;
+          let partner = (i * 7 + 3) % n;
+          if (partner === i) partner = (partner + 1) % n;
+          this.activePair = [i, partner];
+          for (let k = 0; k < n; k++) {
+            this.agents[k]!.dimmed = k !== i && k !== partner;
+          }
           // 累加到「进行到第 i 只为止」的部分得分（让观众看到数字在长）
           for (let k = 0; k <= i; k++) this.scores[k] = totals[k]!;
         }, i * msPerAgent),
@@ -164,6 +182,7 @@ export class PopulationScene {
 
         // 解除聚光/变淡
         this.focusIdx = -1;
+        this.activePair = null;
         for (const a of this.agents) a.dimmed = false;
 
         const result: TournamentResult = {
@@ -201,9 +220,10 @@ export class PopulationScene {
       .map((agent, index) => (agent.kind !== to ? index : -1))
       .filter((index) => index >= 0);
     if (candidates.length === 0) return null;
-    const index = candidates[Math.floor(Math.random() * candidates.length)]!;
+    const index = candidates[Math.floor(this.simulationRandom.next() * candidates.length)]!;
     this.scores.fill(0);
     this.focusIdx = -1;
+    this.activePair = null;
     for (const agent of this.agents) agent.dimmed = false;
     this.mutate(index, to);
     return index;
@@ -221,12 +241,16 @@ export class PopulationScene {
   spotlight(index: number, durationMs = 520): void {
     if (!this.agents[index]) return;
     this.focusIdx = index;
+    // 选择圆环对面的个体，保证当前互动线足够长，不会被相邻小人遮住。
+    const opposite = (index + Math.floor(this.agents.length / 2)) % this.agents.length;
+    this.activePair = [index, opposite];
     for (let i = 0; i < this.agents.length; i++) {
-      this.agents[i]!.dimmed = i !== index;
+      this.agents[i]!.dimmed = !this.activePair.includes(i);
     }
     this.timers.push(window.setTimeout(() => {
       if (this.focusIdx !== index) return;
       this.focusIdx = -1;
+      this.activePair = null;
       for (const agent of this.agents) agent.dimmed = false;
     }, durationMs));
   }
@@ -342,43 +366,24 @@ export class PopulationScene {
     const compact = h < 260;
     const compactCircle = canvas.dataset.layout === "compact-circle";
     const linkedCircle = canvas.dataset.layout === "linked-circle";
-    const showLinks = canvas.dataset.links === "all" || !compact;
     const peepScale = compact ? 0.43 : linkedCircle ? 0.55 : 0.62;
 
-    // 底层：所有两两连线（灰色细网）
-    if (showLinks) {
-      ctx.save();
-      ctx.strokeStyle = LINK;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let i = 0; i < n; i++) {
-        for (let j = i + 1; j < n; j++) {
-          ctx.moveTo(pos[i]!.x, pos[i]!.y);
-          ctx.lineTo(pos[j]!.x, pos[j]!.y);
-        }
-      }
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // 聚光个体的辐射连线（金色加粗）
-    if (focus >= 0) {
-      const fp = pos[focus]!;
+    // 只显示当前配对，避免全连接网暗示有限群体逐对计分。
+    if (this.activePair) {
+      const [from, to] = this.activePair;
+      const fp = pos[from]!;
+      const tp = pos[to]!;
       ctx.save();
       ctx.strokeStyle = LINK_ACTIVE;
-      ctx.lineWidth = 2.4;
+      ctx.lineWidth = 3.2;
       ctx.lineCap = "round";
-      for (let j = 0; j < n; j++) {
-        if (j === focus) continue;
-        const tp = pos[j]!;
-        const dx = tp.x - fp.x;
-        const dy = tp.y - fp.y;
-        const dist = Math.hypot(dx, dy) || 1;
-        ctx.beginPath();
-        ctx.moveTo(fp.x + (dx / dist) * 24, fp.y + (dy / dist) * 24);
-        ctx.lineTo(fp.x + (dx / dist) * (dist - 24), fp.y + (dy / dist) * (dist - 24));
-        ctx.stroke();
-      }
+      const dx = tp.x - fp.x;
+      const dy = tp.y - fp.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      ctx.beginPath();
+      ctx.moveTo(fp.x + (dx / dist) * 24, fp.y + (dy / dist) * 24);
+      ctx.lineTo(fp.x + (dx / dist) * (dist - 24), fp.y + (dy / dist) * (dist - 24));
+      ctx.stroke();
       ctx.fillStyle = "rgba(217,164,65,0.16)";
       ctx.beginPath();
       ctx.arc(fp.x, fp.y, 38, 0, Math.PI * 2);
@@ -427,7 +432,7 @@ export class PopulationScene {
       ctx.restore();
 
       // 得分标签：固定在头顶正上方（屏幕坐标），避免顶部出界/底部遮头
-      if (this.busy || this.scores[i] !== 0) {
+      if (this.busy && i === focus) {
         ctx.save();
         const isFocus = i === focus;
         ctx.font = isFocus
@@ -442,11 +447,3 @@ export class PopulationScene {
     }
   }
 }
-
-function shuffle<T>(arr: T[]): void {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j]!, arr[i]!];
-  }
-}
-

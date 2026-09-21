@@ -6,6 +6,9 @@ import {
   doveFitness,
   payoffMatrix,
   playRound,
+  resolveRound,
+  discreteGenerationStep,
+  nearestEquilibriumCount,
   replicatorStep,
   simulateGenerations,
 } from "./hawkDove";
@@ -20,12 +23,63 @@ describe("支付矩阵", () => {
     expect(playRound("dove", "dove", p)).toEqual([25, 25]);
   });
 
+  test("单次鹰鹰相遇有真实赢家和输家", () => {
+    expect(resolveRound("hawk", "hawk", p, true)).toEqual({
+      payoffs: [50, -100],
+      winner: "self",
+    });
+    expect(resolveRound("hawk", "hawk", p, false)).toEqual({
+      payoffs: [-100, 50],
+      winner: "other",
+    });
+  });
+
   test("矩阵结构", () => {
     const m = payoffMatrix(p);
     expect(m.hh).toBe(-25);
     expect(m.hd).toBe(50);
     expect(m.dh).toBe(0);
     expect(m.dd).toBe(25);
+  });
+});
+
+describe("16 人教学演化", () => {
+  test("每代只改变一个席位并在 8/8 停止", () => {
+    expect(discreteGenerationStep(2, 16, p)).toBe(3);
+    expect(discreteGenerationStep(7, 16, p)).toBe(8);
+    expect(discreteGenerationStep(8, 16, p)).toBe(8);
+    expect(discreteGenerationStep(9, 16, p)).toBe(8);
+  });
+
+  test("受控冲突代价映射到清晰人数", () => {
+    expect(nearestEquilibriumCount(16, { value: 50, cost: 80 })).toBe(10);
+    expect(nearestEquilibriumCount(16, { value: 50, cost: 100 })).toBe(8);
+    expect(nearestEquilibriumCount(16, { value: 50, cost: 200 })).toBe(4);
+  });
+
+  test("三条教学路径都逐席位走到稳定点", () => {
+    const trace = (start: number, params: { value: number; cost: number }) => {
+      const values = [start];
+      for (let i = 0; i < 20; i++) {
+        const next = discreteGenerationStep(values.at(-1)!, 16, params);
+        values.push(next);
+        if (next === values.at(-2)) break;
+      }
+      return values;
+    };
+
+    expect(trace(2, p)).toEqual([2, 3, 4, 5, 6, 7, 8, 8]);
+    expect(trace(8, { value: 50, cost: 80 })).toEqual([8, 9, 10, 10]);
+    expect(trace(8, { value: 50, cost: 200 })).toEqual([8, 7, 6, 5, 4, 4]);
+  });
+
+  test("任意一代最多改变一个席位", () => {
+    for (const cost of [80, 100, 200]) {
+      for (let hawks = 0; hawks <= 16; hawks++) {
+        const next = discreteGenerationStep(hawks, 16, { value: 50, cost });
+        expect(Math.abs(next - hawks)).toBeLessThanOrEqual(1);
+      }
+    }
   });
 });
 

@@ -2,8 +2,8 @@
  * 第二关 · 如果大家都这么做？（群体演化 / 频率依赖）
  *
  * 圆形锦标赛（学习 ncase 的信任的进化）：
- *  - 12 个小人围成圈，两两灰色连线表示每代要两两对局
- *  - 点「演化一代」→ 每个个体轮流被聚光（金色辐射线），累计其与所有人对局的总分
+ *  - 16 个小人围成圈，当前亮线表示抽样展示的一次相遇
+ *  - 点「演化一代」→ 逐个展示代表性相遇，再比较两种策略的期望收益
  *  - 一轮结束后：得分最低者换成得分最高者的帽子（复制者动态）
  *  - 到达收益打平点后，再完整演化一代；比例仍不变才确认收敛
  */
@@ -15,7 +15,7 @@ import { DEFAULT_PARAMS, doveFitness, hawkFitness } from "../core/hawkDove";
 import { PopulationScene, type TournamentResult } from "../ui/populationScene";
 import { drawEvoChart } from "../ui/evoChart";
 
-const COUNT = 12;
+const COUNT = 16;
 const P = DEFAULT_PARAMS; // V=50 C=100 → 平衡点 50%
 
 let scene: PopulationScene | null = null;
