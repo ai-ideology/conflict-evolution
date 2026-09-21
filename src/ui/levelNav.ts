@@ -12,6 +12,12 @@ export interface LevelInfo {
 
 let currentIndex = 0;
 let levels: LevelInfo[] = [];
+/** 触屏上首次点按只展开气泡的圆点下标；-1 表示没有展开的 */
+let tipOpenIndex = -1;
+
+function isCoarsePointer(): boolean {
+  return window.matchMedia?.("(pointer: coarse)").matches ?? false;
+}
 
 export function initLevelNav(order: LevelInfo[]): void {
   levels = order;
@@ -32,10 +38,26 @@ export function initLevelNav(order: LevelInfo[]): void {
     item.appendChild(tip);
 
     item.addEventListener("click", () => {
+      // 触屏：第一次点只显示关卡名，第二次点才跳转（鼠标有 hover，不受影响）
+      if (isCoarsePointer() && i !== currentIndex && tipOpenIndex !== i) {
+        tipOpenIndex = i;
+        refresh();
+        return;
+      }
+      tipOpenIndex = -1;
       publish("slideshow/goto", i);
     });
 
     nav.appendChild(item);
+  });
+
+  // 点页面其他位置时收起气泡
+  document.addEventListener("click", (e) => {
+    if (tipOpenIndex < 0) return;
+    if (!(e.target as HTMLElement).closest(".level-dot")) {
+      tipOpenIndex = -1;
+      refresh();
+    }
   });
 
   document.body.appendChild(nav);
@@ -43,6 +65,7 @@ export function initLevelNav(order: LevelInfo[]): void {
   subscribe("slideshow/changed", (data) => {
     const d = data as { index: number };
     currentIndex = d.index;
+    tipOpenIndex = -1;
     refresh();
   });
 
@@ -56,6 +79,7 @@ function refresh(): void {
   dots.forEach((dot, i) => {
     dot.classList.toggle("current", i === currentIndex);
     dot.classList.toggle("passed", i < currentIndex);
+    dot.classList.toggle("tip-open", i === tipOpenIndex);
   });
   void levels;
 }

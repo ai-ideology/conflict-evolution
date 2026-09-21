@@ -24,6 +24,7 @@ import {
 } from "../core/learning";
 import { createSeededRandom, type RandomSource } from "../core/random";
 import { EcologyScene } from "../ui/ecologyScene";
+import { publish } from "../core/pubsub";
 import { registerSlide } from "./Slide";
 import { clearTimers, revealSteps } from "./helpers";
 
@@ -374,6 +375,7 @@ registerSlide({
     bind("#btn-learning-group-day", learningDay);
     bind("#btn-learning-show-final", showFinalComparison);
     bind("#btn-learning-replay", reset);
+    bind("#btn-to-order", () => publish("slideshow/next"));
   },
   onEnter() {
     reset();

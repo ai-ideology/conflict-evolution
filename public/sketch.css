@@ -61,7 +61,8 @@ h1, h2, h3, h4 {
 
 .slide {
   display: none;
-  min-height: 100vh;
+  /* 为底部固定导航预留 64px，避免内容被遮挡 */
+  min-height: calc(100vh - 64px);
   padding: 6vh 20px 12vh;
 }
 
@@ -310,6 +311,258 @@ h1, h2, h3, h4 {
 
 .world-col canvas {
   display: block;
+}
+
+/* 第七关：在第四关圆环上叠加公共基金与群体账本。 */
+#slide-order {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  min-height: 680px;
+  padding: 2vh 20px 68px;
+  overflow: hidden;
+}
+
+body:has(#slide-order.active) { overflow-y: hidden; }
+#slide-order .slide-inner {
+  max-width: 1180px;
+}
+#slide-order .env-header { margin-bottom: .45rem; }
+
+#slide-order .order-workspace {
+  grid-template-columns: minmax(0, 1.4fr) minmax(350px, .82fr);
+  align-items: stretch;
+  height: min(530px, calc(100vh - 190px));
+  min-height: 500px;
+}
+
+.order-stage {
+  position: relative;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#order-canvas {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 335px;
+}
+
+.order-fund {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 108px;
+  min-height: 80px;
+  transform: translate(-50%, -50%) rotate(-1deg);
+  display: grid;
+  place-items: center;
+  align-content: center;
+  padding: .45rem;
+  border: 2px solid var(--gold);
+  border-radius: var(--radius-hand-2);
+  background: rgba(255, 253, 247, .94);
+  box-shadow: var(--shadow-sketch);
+  line-height: 1.2;
+  pointer-events: none;
+}
+
+.order-fund span, .order-fund small { color: var(--ink-light); }
+.order-fund b { color: var(--gold); font-size: 1.55rem; }
+.order-fund small { font-size: .68rem; }
+
+.order-hud { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.order-ledger-mini {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5rem;
+  margin: .45rem auto 0;
+  width: min(520px, 95%);
+}
+
+.order-ledger-mini span {
+  padding: .25rem .45rem;
+  border-bottom: 2px solid rgba(65,64,62,.22);
+  text-align: center;
+  font-size: .86rem;
+}
+
+.order-side { min-width: 0; height: 100%; display: flex; flex-direction: column; gap: .8rem; }
+.order-phase { flex: 1 1 auto; margin: 0; padding: clamp(1.05rem, 1.8vw, 1.65rem); }
+.order-phase .btn { margin-top: .85rem; }
+
+/* 右栏较窄，预测选项横向排开，避免三个大按钮把单屏卡片撑出视口。 */
+.order-phase .choice-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .35rem;
+  margin-top: .45rem;
+}
+
+.order-phase .choice-row .btn {
+  min-width: 0;
+  margin: 0;
+  padding: .55rem .35rem;
+  font-size: .88rem;
+  line-height: 1.3;
+}
+
+#order-medium-predict .choice-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#order-small-ready {
+  padding-top: .8rem;
+  padding-bottom: .8rem;
+}
+.order-equation {
+  margin: 1rem 0;
+  padding: .85rem;
+  border: 2px dashed rgba(65,64,62,.35);
+  background: rgba(238,228,205,.42);
+  font-size: 1.05rem;
+}
+.order-equation b { color: var(--success); font-size: 1.3rem; }
+
+.order-compare-table {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: .45rem;
+  margin: .75rem 0;
+}
+
+.order-compare-table div {
+  display: grid;
+  grid-template-columns: .55fr .8fr 1.25fr;
+  align-items: center;
+  padding: .5rem;
+  border: 1.5px solid rgba(65,64,62,.5);
+  font-size: .82rem;
+}
+
+.order-compare-table .best {
+  border: 2px solid var(--success);
+  background: rgba(90,143,90,.1);
+}
+.order-compare-table strong { color: var(--hawk); }
+
+/* 第七关：先猜测再翻开的总账卡片 */
+.order-compare-table .order-guess {
+  display: grid;
+  grid-template-columns: .55fr .8fr 1.25fr;
+  align-items: center;
+  gap: 0 .4rem;
+  padding: .55rem .6rem;
+  border: 1.5px solid rgba(65,64,62,.5);
+  background: #fffdf7;
+  font-family: var(--font-body);
+  font-size: .82rem;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-hand-2);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.order-compare-table .order-guess:hover {
+  transform: translate(-1px, -2px);
+  box-shadow: var(--shadow-sketch);
+}
+
+.order-compare-table .order-guess em {
+  font-style: normal;
+  color: var(--ink-light);
+  font-size: .72rem;
+}
+
+.order-compare-table .order-guess strong { text-align: right; }
+
+.order-compare-table .order-guess.chosen {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.order-compare-table .order-guess.best {
+  border: 2px solid var(--success);
+  background: rgba(90,143,90,.12);
+}
+
+.btn.chosen {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.order-echo {
+  margin-top: .5rem;
+  padding: .5rem .8rem;
+  border-left: 3px solid var(--gold);
+  background: rgba(217,164,65,.1);
+  font-size: .92rem;
+}
+
+#order-final {
+  padding: .75rem .9rem;
+}
+
+#order-final .big-quote {
+  margin: .35rem 0;
+  font-size: 1.15rem;
+}
+
+#order-final .order-compare-table {
+  gap: .3rem;
+  margin: .4rem 0;
+}
+
+#order-final .order-guess {
+  padding: .32rem .4rem;
+  font-size: .74rem;
+  line-height: 1.25;
+}
+
+#order-final .order-guess em {
+  font-size: .66rem;
+}
+
+#order-final-reveal p {
+  margin: .3rem 0;
+  font-size: .78rem;
+  line-height: 1.38;
+}
+
+#order-final-reveal .env-mini-summary {
+  padding: .45rem .55rem;
+}
+
+#order-final-reveal .btn {
+  margin: .3rem;
+  padding: 4px 16px;
+  font-size: 1rem;
+}
+
+/* 作答后，上一认知节点已经完成：收起题干，只留下总账、结论和边界。 */
+#order-final.is-revealed > .env-chapter,
+#order-final.is-revealed > .big-quote,
+#order-final.is-revealed > .note {
+  display: none;
+}
+
+#order-final.is-revealed .order-compare-table {
+  margin-top: 0;
+}
+
+#order-final.is-revealed #order-final-reveal p {
+  margin: .2rem 0;
+  line-height: 1.28;
+}
+
+@media (max-width: 900px) {
+  #slide-order { position: static; height: auto; min-height: 100vh; overflow: visible; }
+  body:has(#slide-order.active) { overflow-y: auto; }
+  #slide-order .order-workspace { grid-template-columns: 1fr; }
+  .order-stage { min-height: 520px; }
 }
 
 /* 第六关：固定世界与学习世界共用一个圆环舞台，右侧只保留当前分镜。 */
@@ -806,6 +1059,11 @@ body:has(#slide-learning.active) { overflow-y: hidden; }
 
 /* ---------- 底部关卡导航 ---------- */
 
+/* 导航占位而非悬浮：给 body 留出导航高度的空间 */
+body {
+  padding-bottom: 64px;
+}
+
 #level-nav {
   position: fixed;
   bottom: 0;
@@ -815,7 +1073,8 @@ body:has(#slide-learning.active) { overflow-y: hidden; }
   justify-content: center;
   gap: 12px;
   padding: 12px 0 14px;
-  background: linear-gradient(transparent, rgba(245, 240, 230, 0.92) 45%);
+  background: rgba(245, 240, 230, 0.95);
+  border-top: 2px solid rgba(65, 64, 62, 0.15);
   z-index: 50;
 }
 
@@ -829,6 +1088,13 @@ body:has(#slide-learning.active) { overflow-y: hidden; }
   cursor: pointer;
   padding: 0;
   transition: transform 0.15s ease, background 0.2s ease;
+}
+
+/* 透明扩展热区到 44px（触屏最小推荐），视觉尺寸不变 */
+.level-dot::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
 }
 
 .level-dot:hover {
@@ -871,7 +1137,10 @@ body:has(#slide-learning.active) { overflow-y: hidden; }
   border-top-color: var(--ink);
 }
 
-.level-dot:hover .level-tip {
+/* 鼠标悬停、键盘聚焦、触屏首点，都能看到关卡名 */
+.level-dot:hover .level-tip,
+.level-dot:focus-visible .level-tip,
+.level-dot.tip-open .level-tip {
   opacity: 1;
 }
 

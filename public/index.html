@@ -581,6 +581,137 @@
             <p class="env-mini-summary" id="learn-final-copy"></p>
             <p class="note">这里只说明当前参数下的一条可回放轨迹，不代表学习在所有环境里都会带来合作。</p>
             <button class="btn" id="btn-learning-replay">重新演一遍</button>
+            <button class="btn btn-primary" id="btn-to-order">如果群体主动建立秩序呢？ →</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide-order">
+    <div class="slide-inner">
+      <header class="env-header reveal">
+        <p class="eyebrow">第七关 · 建立秩序</p>
+        <h2>花一点资源制止争抢，值得吗？</h2>
+        <p>回到第四关：没有库存、饥饿、学习、淘汰和繁衍。总资源不变，只改变秩序投入。</p>
+      </header>
+      <div class="eco-workspace order-workspace reveal" id="order-playground">
+        <div class="paper-card order-stage">
+          <canvas id="order-canvas" data-layout="linked-circle" aria-label="十六席秩序实验群体"></canvas>
+          <div class="order-fund" id="order-fund">
+            <span>秩序基金</span>
+            <b id="order-fund-value">0</b>
+            <small id="order-fund-copy">每份资源拿出 0</small>
+          </div>
+          <div class="eco-hud order-hud">
+            <span id="order-generation">第 0 代</span>
+            <span id="order-ratio">8 鹰 / 8 鸽</span>
+            <span>每代总资源 <b id="order-gross">400</b></span>
+            <span>群体净收益 <b id="order-net">200</b></span>
+          </div>
+          <div class="order-ledger-mini">
+            <span>组织 <b id="order-cost">0</b></span>
+            <span>冲突损耗 <b id="order-conflict">200</b></span>
+            <span>留下 <b id="order-retained">200</b></span>
+          </div>
+          <p class="note" id="order-note">所有数字都是按 16 个比例席位折算的长期期望，不是一次具体抽签的保证。</p>
+        </div>
+        <aside class="order-side">
+          <nav class="learn-steps order-steps" aria-label="第七关进度">
+            <span data-order-step="baseline">没有组织</span>
+            <span data-order-step="small">少量投入</span>
+            <span data-order-step="medium">中等投入</span>
+            <span data-order-step="high">较高投入</span>
+            <span data-order-step="compare">总账</span>
+          </nav>
+
+          <div class="paper-card order-phase" id="order-intro">
+            <p class="env-chapter">先看没有组织的世界</p>
+            <p class="big-quote">400 点资源里，有多少真正留给了群体？</p>
+            <p>原始世界停在 8 鹰 / 8 鸽。争抢不用交管理费，但鹰鹰冲突会真实烧掉收益。</p>
+            <button class="btn btn-primary" id="btn-order-baseline">打开没有组织的账本 →</button>
+          </div>
+
+          <div class="paper-card order-phase" id="order-baseline" style="display:none">
+            <p class="env-chapter">没有组织 · 基准账本</p>
+            <div class="order-equation">400 总资源 − 0 组织成本 − 200 冲突损耗 = <b>200</b></div>
+            <p>一半的资源在长期冲突风险中损失了。那能否拿出一点资源，换取更高的争抢代价？</p>
+            <button class="btn btn-primary" id="btn-order-small">每份资源拿出 5 点 →</button>
+          </div>
+
+          <div class="paper-card order-phase" id="order-small-ready" style="display:none">
+            <p class="env-chapter">钱已经花了，人还没改变</p>
+            <p class="big-quote">总资源仍是 400，但 40 点先进入秩序基金。</p>
+            <p>可争夺资源变少，争抢代价从 100 提高到 180。此刻仍是 8 鹰 / 8 鸽，所以短期账面反而更差。</p>
+            <p class="env-chapter" style="margin-top:.7rem">先猜一猜：等群体演化到稳定之后——</p>
+            <div class="choice-row">
+              <button class="btn order-small-predict" data-predict="win">省下的损失多于 40</button>
+              <button class="btn order-small-predict" data-predict="tie">刚好抵消</button>
+              <button class="btn order-small-predict" data-predict="lose">组织花得更多</button>
+            </div>
+            <button class="btn btn-primary" id="btn-order-small-next" disabled>让群体演化一代 →</button>
+          </div>
+
+          <div class="paper-card order-phase" id="order-small-running" style="display:none">
+            <p class="env-chapter">少量投入 · 逐代观察</p>
+            <p class="big-quote" id="order-small-copy">每代只让一个低收益策略转向高收益策略。</p>
+            <button class="btn btn-primary" id="btn-order-small-generation">再演化一代 →</button>
+          </div>
+
+          <div class="paper-card order-phase" id="order-small-result" style="display:none">
+            <p class="env-chapter">少量投入 · 稳定账本</p>
+            <p class="big-quote">4 鹰 / 12 鸽，群体期望净收益变成 <b>270</b>。</p>
+            <p>组织花了 40，但冲突损耗从 200 降到 90，合计反而多留下 70。</p>
+            <p class="order-echo" id="order-small-echo"></p>
+            <button class="btn btn-primary" id="btn-order-medium">如果每份拿出 10 点呢？ →</button>
+          </div>
+
+          <div class="paper-card order-phase" id="order-medium-predict" style="display:none">
+            <p class="env-chapter">先预测，再运行</p>
+            <p class="big-quote">投入翻倍，收益也会一直增加吗？</p>
+            <p>中等投入把有效冲突代价提高到 320，但每代也要花掉 80。</p>
+            <div class="choice-row">
+              <button class="btn btn-hawk order-predict" data-predict="up">我猜会更好</button>
+              <button class="btn btn-dove order-predict" data-predict="down">我猜成本太高</button>
+            </div>
+          </div>
+
+          <div class="paper-card order-phase" id="order-auto-running" style="display:none">
+            <p class="env-chapter" id="order-auto-title">正在演化</p>
+            <p class="big-quote" id="order-auto-copy">从相同的 8 鹰 / 8 鸽重新开始。</p>
+            <p class="note">数字每代停一下；这里压缩的是已经看懂的重复过程。</p>
+          </div>
+
+          <div class="paper-card order-phase" id="order-medium-result" style="display:none">
+            <p class="env-chapter">中等投入 · 稳定账本</p>
+            <p class="big-quote">2 鹰 / 14 鸽，群体期望净收益达到 <b>280</b>。</p>
+            <p>比少量投入更好。但这是否意味着组织投入越高越好？</p>
+            <button class="btn btn-primary" id="btn-order-high">把投入提高到 20 点 →</button>
+          </div>
+
+          <div class="paper-card order-phase" id="order-high-result" style="display:none">
+            <p class="env-chapter">较高投入 · 反例</p>
+            <p class="big-quote">争抢更少了，但群体净收益降到 <b>225</b>。</p>
+            <p>组织消耗了 160，已经超过它继续减少的冲突损耗。秩序并不是越重越好。</p>
+            <button class="btn btn-primary" id="btn-order-compare">打开四个世界的总账 →</button>
+          </div>
+
+          <div class="paper-card order-phase" id="order-final" style="display:none">
+            <p class="env-chapter">总资源相同 · 只改变秩序投入</p>
+            <p class="big-quote" id="order-final-question">哪一种投入，让群体最后留下的最多？</p>
+            <p class="note" id="order-final-hint">四个世界都已演化到稳定。先自己判断，再翻开总账。</p>
+            <div class="order-compare-table is-quiz">
+              <button class="order-guess" data-guess="none"><b>无</b><span>8 鹰 / 8 鸽</span><em>冲突损耗 200 · 组织 0</em><strong>?</strong></button>
+              <button class="order-guess" data-guess="light"><b>少量</b><span>4 鹰 / 12 鸽</span><em>冲突损耗 90 · 组织 40</em><strong>?</strong></button>
+              <button class="order-guess" data-guess="medium"><b>中等</b><span>2 鹰 / 14 鸽</span><em>冲突损耗 40 · 组织 80</em><strong>?</strong></button>
+              <button class="order-guess" data-guess="high"><b>较高</b><span>1 鹰 / 15 鸽</span><em>冲突损耗 15 · 组织 160</em><strong>?</strong></button>
+            </div>
+            <div id="order-final-reveal" style="display:none">
+              <p class="env-mini-summary step" id="order-final-verdict"></p>
+              <p class="step"><b>群体不必等待所有人突然变善良：</b>共同投入可以减少更大的冲突损失，但真正重要的不是越强越好，而是这笔投入是否值得。</p>
+              <p class="note step">边界：这里只比较固定资源、固定策略下的群体收益总和；不讨论资源不足、学习、淘汰、繁衍、权力滥用或分配公平。</p>
+              <button class="btn step" id="btn-order-replay">重新实验</button>
+            </div>
           </div>
         </aside>
       </div>

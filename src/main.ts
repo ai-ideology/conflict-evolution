@@ -16,6 +16,7 @@ import "./slides/slide4";
 import "./slides/slide5";
 import "./slides/slide6";
 import "./slides/slide7";
+import "./slides/slide8";
 
 const SLIDE_ORDER = [
   "slide-title",
@@ -26,6 +27,7 @@ const SLIDE_ORDER = [
   "slide-env-teaser",
   "slide-ecology",
   "slide-learning",
+  "slide-order",
 ];
 
 const LEVEL_NAMES = [
@@ -37,6 +39,7 @@ const LEVEL_NAMES = [
   "第四关 · 改变打架损失",
   "第五关 · 当食物不够",
   "第六关 · 当个体开始学习",
+  "第七关 · 用资源建立秩序",
 ];
 
 const show = new Slideshow();
