@@ -8,6 +8,7 @@ import {
   type InstitutionPolicyId,
 } from "../core/institution";
 import { PopulationScene, type TournamentResult } from "../ui/populationScene";
+import { publish } from "../core/pubsub";
 import { registerSlide } from "./Slide";
 import { $, clearTimers, revealSteps } from "./helpers";
 
@@ -287,6 +288,7 @@ registerSlide({
       runAutomatic("high", "#order-high-result"));
     $("#btn-order-compare").addEventListener("click", showFinal);
     $("#btn-order-replay").addEventListener("click", reset);
+    $("#btn-to-lab").addEventListener("click", () => publish("slideshow/next"));
     document.querySelectorAll<HTMLElement>(".order-small-predict")
       .forEach((button) => button.addEventListener("click", () => {
         smallPrediction = button.dataset.predict ?? null;

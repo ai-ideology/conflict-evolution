@@ -732,6 +732,167 @@
               <p class="step"><b>群体不必等待所有人突然变善良：</b>共同投入可以减少更大的冲突损失，但真正重要的不是越强越好，而是这笔投入是否值得。</p>
               <p class="note step">边界：这里只比较固定资源、固定策略下的群体收益总和；不讨论资源不足、学习、淘汰、繁衍、权力滥用或分配公平。</p>
               <button class="btn step" id="btn-order-replay">重新实验</button>
+              <button class="btn btn-primary step" id="btn-to-lab">进入群体实验室 →</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide-lab">
+    <div class="slide-inner">
+      <header class="env-header reveal">
+        <p class="eyebrow">群体实验室</p>
+        <h2>如果由你来设置这个世界呢？</h2>
+        <p>固定 16 个人，每个人仍会和其余 15 人各相遇一次。这里只改变参数，不加入饥饿、淘汰、繁衍或学习。</p>
+      </header>
+
+      <div class="sandbox-workspace reveal">
+        <div class="sandbox-stage">
+          <div class="circle-stage-wrap">
+            <canvas id="sandbox-canvas" data-layout="linked-circle" data-network="round-robin" aria-label="十六人群体实验"></canvas>
+            <div class="ratio-counter ratio-counter-compact" id="sandbox-ratio-counter" aria-live="polite">
+              <span class="ratio-generation" id="sandbox-generation">第 0 代</span>
+              <div class="ratio-pair">
+                <span class="ratio-side ratio-hawk"><b id="sandbox-hawk-count">8</b><small>鹰</small></span>
+                <i>·</i>
+                <span class="ratio-side ratio-dove"><b id="sandbox-dove-count">8</b><small>鸽</small></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sandbox-readout">
+            <span>鹰每人 <b id="sandbox-hawk-score">0</b> 分</span>
+            <span>鸽每人 <b id="sandbox-dove-score">0</b> 分</span>
+            <span>鹰鹰配对 <b id="sandbox-fights">28</b> 组</span>
+          </div>
+          <canvas id="sandbox-chart" class="evo-chart" width="620" height="150"></canvas>
+          <p class="note sandbox-chart-note">曲线只记录前 10 代；之后仍可继续逐代观察。</p>
+        </div>
+
+        <aside class="sandbox-side">
+          <div class="paper-card sandbox-panel">
+            <p class="env-chapter">一 · 设置起点</p>
+            <div class="sandbox-controls">
+              <label>
+                <span>初始鹰数量</span>
+                <input id="sandbox-initial" type="range" min="1" max="15" step="1" value="8" />
+                <output id="sandbox-initial-output">8 鹰 / 8 鸽</output>
+              </label>
+              <label>
+                <span>食物价值</span>
+                <input id="sandbox-value" type="range" min="20" max="80" step="10" value="50" />
+                <output id="sandbox-value-output">50 分</output>
+              </label>
+              <label>
+                <span>冲突损失</span>
+                <input id="sandbox-cost" type="range" min="100" max="240" step="20" value="100" />
+                <output id="sandbox-cost-output">100 分</output>
+              </label>
+              <label>
+                <span>最多观察</span>
+                <input id="sandbox-limit" type="range" min="3" max="15" step="1" value="10" />
+                <output id="sandbox-limit-output">10 代</output>
+              </label>
+            </div>
+
+            <div id="sandbox-prediction">
+              <p class="env-chapter">二 · 先预测</p>
+              <p class="note">从这个起点出发，鹰的数量会怎样？</p>
+              <div class="choice-row">
+                <button class="btn sandbox-predict" data-predict="up">变多</button>
+                <button class="btn sandbox-predict" data-predict="same">不变</button>
+                <button class="btn sandbox-predict" data-predict="down">变少</button>
+              </div>
+            </div>
+
+            <div class="sandbox-actions">
+              <button class="btn" id="btn-sandbox-step" disabled>演化一代</button>
+              <button class="btn btn-primary" id="btn-sandbox-run" disabled>运行到稳定或上限 →</button>
+            </div>
+            <p class="note sandbox-status" id="sandbox-status">先调整参数，再选一个预测。</p>
+            <button class="btn" id="btn-sandbox-reset">用当前参数重新开始</button>
+            <button class="btn btn-primary" id="btn-to-finale">回看我们发现了什么 →</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="slide-finale">
+    <div class="slide-inner">
+      <header class="env-header reveal">
+        <p class="eyebrow">最后，回到这些人身上</p>
+        <h2>我们真正改变的，是什么？</h2>
+      </header>
+
+      <div class="finale-workspace reveal">
+        <div class="finale-stage">
+          <canvas id="finale-canvas" aria-label="冲突的进化总结动画"></canvas>
+          <p class="finale-stage-note" id="finale-stage-note">从最初的一次相遇开始。</p>
+        </div>
+
+        <aside class="finale-side">
+          <div class="paper-card finale-phase" id="finale-rewind">
+            <p class="env-chapter">把经历慢慢翻回来</p>
+            <p class="big-quote" id="finale-rewind-title">最初，只有两个人和一份食物。</p>
+            <p class="finale-action-hint"><b>你可以：</b>拖动金色圆点，或点击下面的按钮，一步一步回看。</p>
+            <input id="finale-timeline" class="finale-timeline" type="range" min="0" max="5" step="1" value="0" aria-label="回看互动历程" />
+            <div class="finale-timeline-labels">
+              <span>相遇</span><span>群体</span><span>资源</span><span>学习</span><span>秩序</span><span>实验</span>
+            </div>
+            <p class="note" id="finale-rewind-copy">向右拖动，看看同一个选择进入不同环境后发生了什么。</p>
+            <button class="btn btn-primary" id="btn-finale-rewind-next">继续回看：群体 →</button>
+          </div>
+
+          <div class="paper-card finale-phase" id="finale-ripple" style="display:none">
+            <p class="env-chapter">一次选择，会改变下一次相遇</p>
+            <p class="big-quote">点击圆环中的任意一个人。</p>
+            <p>变化会沿着关系扩散。行为是否占优势，也会随着群体本身而改变。</p>
+            <button class="btn btn-primary" id="btn-finale-ripple-next" disabled>把镜头再拉远 →</button>
+          </div>
+
+          <div class="paper-card finale-phase" id="finale-layers" style="display:none">
+            <p class="env-chapter">把“改变”放到系统里</p>
+            <p class="big-quote">除了劝一个人，我们还能改变什么？</p>
+            <div class="change-token" id="finale-token" draggable="true">改变</div>
+            <p class="note">拖动筹码，或直接选择一层：</p>
+            <div class="finale-layer-stack">
+              <button data-layer="payoff">收益与冲突代价</button>
+              <button data-layer="resources">资源与生存压力</button>
+              <button data-layer="learning">记忆与学习</button>
+              <button data-layer="rules">组织与规则</button>
+            </div>
+            <p class="finale-layer-feedback" id="finale-layer-feedback">每一层都会改变行为得到的反馈。</p>
+            <button class="btn btn-primary" id="btn-finale-layers-next" disabled>签收我的实验结论 →</button>
+          </div>
+
+          <div class="paper-card finale-phase" id="finale-note" style="display:none">
+            <p class="env-chapter">你的实验便笺</p>
+            <div class="experiment-note" id="finale-experiment-note">
+              <div class="experiment-note-front">
+                <p id="finale-note-summary"></p>
+                <small id="finale-note-params"></small>
+              </div>
+              <div class="experiment-note-back">
+                <b>这不是普遍答案</b>
+                <p>固定16人、固定策略、简化收益。模型帮助我们看清条件与反馈，不替现实作出最后判决。</p>
+              </div>
+            </div>
+            <button class="btn" id="btn-finale-flip">翻到背面 →</button>
+            <button class="btn btn-primary" id="btn-finale-note-next" disabled>摘下帽子 →</button>
+          </div>
+
+          <div class="paper-card finale-phase" id="finale-hats" style="display:none">
+            <p class="env-chapter">帽子不是一个人的名字</p>
+            <p class="big-quote">点击一个人，亲手摘下他的帽子。</p>
+            <p class="note">红与蓝描述的是一次行为，不是两种天生不同的人。</p>
+            <div id="finale-ending" style="display:none">
+              <p class="finale-quote">鹰与鸽，不是两种人。<br />它们是环境中被选择、被学习，也能被规则改变的行为。</p>
+              <p>改变冲突的结局，有时要改变选择；<br />更多时候，要改变选择发生的环境。</p>
+              <button class="btn btn-primary" id="btn-finale-lab">带着一个新问题，再做一次实验 →</button>
+              <button class="btn" id="btn-finale-start">回到开始</button>
             </div>
           </div>
         </aside>

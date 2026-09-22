@@ -136,6 +136,36 @@ export function nearestFiniteEquilibriumCount(
 }
 
 /**
+ * 运行有限群体的逐席位演化。
+ * 返回包含初始状态的鹰数量序列；达到不再变化的状态时提前停止。
+ */
+export function simulateFiniteGenerations(
+  initialHawks: number,
+  populationSize: number,
+  p: PayoffParams,
+  maxGenerations: number,
+): number[] {
+  if (!Number.isInteger(maxGenerations) || maxGenerations < 0) {
+    throw new Error("maxGenerations 必须是非负整数");
+  }
+  const series = [
+    Math.min(populationSize, Math.max(0, Math.round(initialHawks))),
+  ];
+  for (let generation = 0; generation < maxGenerations; generation++) {
+    const current = series[series.length - 1]!;
+    const next = finiteGenerationStep(current, populationSize, p);
+    series.push(next);
+    if (next === current) break;
+    if (
+      series.length >= 3 &&
+      next === series[series.length - 3] &&
+      next !== current
+    ) break;
+  }
+  return series;
+}
+
+/**
  * 大群体比例近似的一代（保留给未来的大群体扩展）：
  * 比较当前比例下两种策略的期望收益，
  * 每代只让一个席位从低收益策略转向高收益策略。

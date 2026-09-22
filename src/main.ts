@@ -17,6 +17,8 @@ import "./slides/slide5";
 import "./slides/slide6";
 import "./slides/slide7";
 import "./slides/slide8";
+import "./slides/slide9";
+import "./slides/slide10";
 
 const SLIDE_ORDER = [
   "slide-title",
@@ -28,6 +30,8 @@ const SLIDE_ORDER = [
   "slide-ecology",
   "slide-learning",
   "slide-order",
+  "slide-lab",
+  "slide-finale",
 ];
 
 const LEVEL_NAMES = [
@@ -40,6 +44,8 @@ const LEVEL_NAMES = [
   "当食物不够",
   "当个体开始学习",
   "用资源建立秩序",
+  "群体实验室",
+  "回看与总结",
 ];
 
 const show = new Slideshow();

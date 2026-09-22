@@ -1,8 +1,8 @@
 /**
- * 第一至第四关的16席圆环场景。
+ * 固定策略实验共用的16席圆环场景。
  * 第二关用淡色关系网表示本代真实循环赛，并逐个点亮个体与其余所有人的配对；
  * 其他关卡仍可只显示当前代表性配对。演化一代后最多一人换帽。
- * 第五关起的库存、空席、淘汰与出生由独立生态场景承载。
+ * 库存、空席、淘汰与出生由独立生态场景承载，不接入本组件。
  */
 
 import type { SketchContext } from "./sketchAnimals";
@@ -517,8 +517,15 @@ export class PopulationScene {
         const radialY = p.y - h / 2;
         const radialLength = Math.hypot(radialX, radialY) || 1;
         const scoreOffset = linkedCircle || compactCircle ? 64 : 68;
-        const scoreX = p.x + (radialX / radialLength) * scoreOffset;
-        const scoreY = p.y + (radialY / radialLength) * scoreOffset;
+        let scoreX = p.x + (radialX / radialLength) * scoreOffset;
+        let scoreY = p.y + (radialY / radialLength) * scoreOffset;
+        // 圆环顶部没有足够的向外空间时，标签改放到人物侧上方，
+        // 避免被画布边界推回帽子正上方。
+        if (scoreY < 30) {
+          const side = radialX < 0 ? -1 : 1;
+          scoreX = p.x + side * 46;
+          scoreY = Math.max(24, p.y - 6);
+        }
         ctx.fillText(
           `${score}`,
           Math.max(24, Math.min(w - 24, scoreX)),

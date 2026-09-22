@@ -13,6 +13,7 @@ import {
   simulateGenerations,
   finiteGenerationStep,
   nearestFiniteEquilibriumCount,
+  simulateFiniteGenerations,
   roundRobinStrategyScores,
 } from "./hawkDove";
 
@@ -113,6 +114,25 @@ describe("16 人真实循环赛演化", () => {
     expect(nearestFiniteEquilibriumCount(16, { value: 50, cost: 80 })).toBe(11);
     expect(nearestFiniteEquilibriumCount(16, { value: 50, cost: 100 })).toBe(9);
     expect(nearestFiniteEquilibriumCount(16, { value: 50, cost: 200 })).toBe(5);
+  });
+
+  test("基础沙盒按真实循环赛逐席位运行并在稳定时提前停止", () => {
+    expect(simulateFiniteGenerations(3, 16, DEFAULT_PARAMS, 20))
+      .toEqual([3, 4, 5, 6, 7, 8, 9, 9]);
+    expect(simulateFiniteGenerations(14, 16, { value: 30, cost: 180 }, 20).at(-1))
+      .toBe(nearestFiniteEquilibriumCount(16, { value: 30, cost: 180 }));
+  });
+
+  test("基础沙盒不会让纯策略群体凭空产生突变", () => {
+    expect(simulateFiniteGenerations(0, 16, DEFAULT_PARAMS, 12)).toEqual([0, 0]);
+    expect(simulateFiniteGenerations(16, 16, DEFAULT_PARAMS, 12)).toEqual([16, 16]);
+  });
+
+  test("基础沙盒识别相邻鹰数量之间的两代振荡", () => {
+    const series = simulateFiniteGenerations(4, 16, { value: 50, cost: 130 }, 20);
+    expect(series.length).toBeLessThan(20);
+    expect(series.at(-1)).toBe(series.at(-3));
+    expect(series.at(-1)).not.toBe(series.at(-2));
   });
 });
 

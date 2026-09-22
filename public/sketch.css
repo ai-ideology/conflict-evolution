@@ -484,6 +484,156 @@ body:has(#slide-order.active) { overflow-y: hidden; }
   margin-top: .45rem;
 }
 
+/* ---------- 群体实验室：固定16人的基础参数实验 ---------- */
+
+#slide-lab {
+  padding-top: 2.4vh;
+  padding-bottom: 8vh;
+}
+
+#slide-lab .slide-inner {
+  max-width: 1240px;
+}
+
+#slide-lab .env-header {
+  margin-bottom: 8px;
+}
+
+.sandbox-workspace {
+  display: grid;
+  grid-template-columns: minmax(620px, 1.55fr) minmax(360px, .82fr);
+  gap: 26px;
+  align-items: start;
+}
+
+.sandbox-stage {
+  min-width: 0;
+  padding: 0 6px;
+}
+
+#sandbox-canvas {
+  display: block;
+  width: 100%;
+  height: min(410px, 48vh);
+  min-height: 360px;
+}
+
+.sandbox-readout {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 2px 0 10px;
+  font-size: .9rem;
+}
+
+.sandbox-readout span {
+  padding: 4px 8px;
+  border-bottom: 2px solid rgba(65, 64, 62, .2);
+}
+
+.sandbox-readout span:first-child b { color: var(--hawk); }
+.sandbox-readout span:nth-child(2) b { color: var(--dove); }
+
+#sandbox-chart {
+  display: block;
+  width: 100%;
+  height: 150px;
+}
+
+.sandbox-chart-note {
+  margin-top: 2px;
+  text-align: center;
+}
+
+.sandbox-side {
+  min-width: 0;
+}
+
+.sandbox-panel {
+  width: 100%;
+  margin: 0;
+  padding: 18px 20px;
+}
+
+.sandbox-controls {
+  display: grid;
+  gap: 9px;
+  margin: 8px 0 14px;
+}
+
+.sandbox-controls label {
+  display: grid;
+  grid-template-columns: 96px 1fr 112px;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  font-size: .9rem;
+}
+
+.sandbox-controls input[type="range"] {
+  width: 100%;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+.sandbox-controls output {
+  color: var(--ink-light);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sandbox-predict {
+  margin: 5px 3px;
+  padding: 7px 16px;
+  font-size: 1rem;
+}
+
+.sandbox-predict.selected {
+  color: var(--paper);
+  background: var(--gold);
+  border-color: var(--ink);
+  transform: translateY(-2px);
+}
+
+.sandbox-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.sandbox-actions .btn,
+#btn-sandbox-reset {
+  font-size: 1rem;
+  padding: 7px 15px;
+}
+
+.sandbox-status {
+  min-height: 4.8em;
+  margin: 8px 0 2px;
+}
+
+@media (max-width: 980px) {
+  .sandbox-workspace {
+    grid-template-columns: 1fr;
+  }
+  .sandbox-side {
+    max-width: 700px;
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 620px) {
+  #sandbox-canvas { height: 330px; min-height: 0; }
+  .sandbox-readout { grid-template-columns: 1fr; }
+  .sandbox-controls label {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .sandbox-controls output { text-align: left; }
+}
+
 .order-phase .choice-row .btn {
   min-width: 0;
   margin: 0;
@@ -1132,6 +1282,222 @@ body:has(#slide-learning.active) { overflow-y: hidden; }
 
 /* ---------- 底部章节导航 ---------- */
 
+/* ---------- 最终回望：五幕互动总结 ---------- */
+
+#slide-finale {
+  padding-top: 2.2vh;
+  padding-bottom: 8vh;
+}
+
+#slide-finale .slide-inner {
+  max-width: 1240px;
+}
+
+#slide-finale .env-header h2 {
+  margin-bottom: 2px;
+}
+
+.finale-workspace {
+  display: grid;
+  grid-template-columns: minmax(590px, 1.4fr) minmax(360px, 0.82fr);
+  gap: 26px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.finale-stage {
+  min-width: 0;
+  padding: 0 8px;
+}
+
+.finale-stage canvas {
+  display: block;
+  width: 100%;
+  height: min(520px, 59vh);
+  min-height: 420px;
+  cursor: pointer;
+}
+
+.finale-stage-note {
+  min-height: 2.2em;
+  margin: -4px auto 0;
+  color: var(--ink-light);
+  font-size: 1rem;
+}
+
+.finale-side {
+  min-width: 0;
+}
+
+.finale-phase {
+  width: 100%;
+  min-height: 350px;
+  margin: 0;
+  padding: 25px 24px;
+}
+
+.finale-phase .big-quote {
+  margin: 12px auto 18px;
+  font-size: 1.55rem;
+}
+
+.finale-timeline {
+  width: 94%;
+  margin: 12px auto 4px;
+  accent-color: var(--gold);
+}
+
+.finale-action-hint {
+  margin: 4px auto 2px;
+  padding: 8px 12px;
+  border-left: 4px solid var(--gold);
+  background: rgba(217, 164, 65, 0.13);
+  color: var(--ink-light);
+  font-size: 0.92rem;
+  text-align: left;
+}
+
+.finale-action-hint b {
+  color: var(--ink);
+  font-family: var(--font-hand);
+}
+
+.finale-timeline-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  color: var(--ink-light);
+  font-family: var(--font-hand);
+  font-size: 0.82rem;
+}
+
+.change-token {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin: 10px auto 6px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: var(--shadow-sketch);
+  color: #fffdf7;
+  font-family: var(--font-hand);
+  font-size: 1.28rem;
+  cursor: grab;
+  transform: rotate(-3deg);
+}
+
+.change-token:active {
+  cursor: grabbing;
+  transform: scale(0.96) rotate(2deg);
+}
+
+.finale-layer-stack {
+  display: grid;
+  gap: 7px;
+  margin: 10px auto 12px;
+}
+
+.finale-layer-stack button {
+  width: 92%;
+  margin: 0 auto;
+  padding: 7px 12px;
+  border: 2px solid rgba(65, 64, 62, 0.48);
+  border-radius: var(--radius-hand-2);
+  background: rgba(236, 228, 211, 0.48);
+  color: var(--ink);
+  font-family: var(--font-hand);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+
+.finale-layer-stack button:nth-child(1) { transform: translateX(-4%); }
+.finale-layer-stack button:nth-child(2) { transform: translateX(2%); }
+.finale-layer-stack button:nth-child(3) { transform: translateX(-1%); }
+.finale-layer-stack button:nth-child(4) { transform: translateX(4%); }
+
+.finale-layer-stack button:hover,
+.finale-layer-stack button.selected {
+  border-color: var(--gold);
+  background: rgba(217, 164, 65, 0.22);
+}
+
+.finale-layer-feedback {
+  min-height: 3.4em;
+  color: var(--ink-light);
+}
+
+.experiment-note {
+  position: relative;
+  min-height: 190px;
+  margin: 12px auto 18px;
+  transform-style: preserve-3d;
+  transition: transform 0.65s ease;
+}
+
+.experiment-note.flipped {
+  transform: rotateY(180deg);
+}
+
+.experiment-note-front,
+.experiment-note-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 22px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-hand-3);
+  background: #fff9df;
+  box-shadow: var(--shadow-sketch);
+  backface-visibility: hidden;
+}
+
+.experiment-note-front {
+  transform: rotate(-1deg);
+}
+
+.experiment-note-front p {
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+}
+
+.experiment-note-front small {
+  margin-top: 12px;
+  color: var(--ink-light);
+}
+
+.experiment-note-back {
+  transform: rotateY(180deg) rotate(1deg);
+  background: var(--paper-dark);
+}
+
+.experiment-note-back b {
+  margin-bottom: 9px;
+  color: var(--hawk);
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+}
+
+.finale-quote {
+  margin: 12px auto;
+  color: var(--ink);
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+  line-height: 1.65;
+}
+
+#finale-ending {
+  animation: settle-pop 0.55s ease both;
+}
+
+#finale-ending .btn {
+  margin-top: 8px;
+}
+
 /* 导航占位而非悬浮：给 body 留出导航高度的空间 */
 body {
   padding-bottom: 64px;
@@ -1255,6 +1621,10 @@ body {
     grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.82fr);
     gap: 16px;
   }
+  .finale-workspace {
+    grid-template-columns: minmax(0, 1.25fr) minmax(330px, 0.85fr);
+    gap: 16px;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1263,6 +1633,9 @@ body {
   .env-lab canvas { height: 350px !important; min-height: 0; }
   .eco-workspace { grid-template-columns: 1fr; }
   .eco-stage canvas { height: 330px !important; min-height: 0; }
+  .finale-workspace { grid-template-columns: 1fr; }
+  .finale-stage canvas { height: 350px; min-height: 0; }
+  .finale-phase { min-height: 0; }
 }
 
 @media (max-width: 560px) {
@@ -1275,4 +1648,7 @@ body {
   .eco-hud b:last-child { grid-column: 1 / -1; }
   .eco-cycle { grid-template-columns: 1fr 1fr; }
   .eco-phase { padding: 18px 14px; }
+  .finale-workspace { gap: 14px; }
+  .finale-stage canvas { height: 290px; }
+  .finale-phase { padding: 18px 14px; }
 }
