@@ -3,7 +3,7 @@
  *
  * 这里刻意只讨论“同样多的资源，是否值得拿出一部分维持秩序”：
  * 不引入学习、淘汰或繁衍。每次遇到的资源总价值固定为 50，K 是制度
- * 运转成本，C 是冲突造成的损失；账本使用长期随机相遇的均值场估算。
+ * 运转成本，C 是冲突造成的损失；账本按16个可见个体的无放回配对估算。
  */
 
 export type InstitutionPolicyId = "none" | "light" | "medium" | "high";
@@ -22,10 +22,10 @@ export interface InstitutionPolicy {
 }
 
 export const INSTITUTION_POLICIES: readonly InstitutionPolicy[] = [
-  { id: "none", label: "没有组织", organizationCost: 0, conflictCost: 100, value: 50, stableHawkCount: 8 },
-  { id: "light", label: "轻度制裁", organizationCost: 5, conflictCost: 180, value: 45, stableHawkCount: 4 },
-  { id: "medium", label: "中度制裁", organizationCost: 10, conflictCost: 320, value: 40, stableHawkCount: 2 },
-  { id: "high", label: "重度制裁", organizationCost: 20, conflictCost: 480, value: 30, stableHawkCount: 1 },
+  { id: "none", label: "没有组织", organizationCost: 0, conflictCost: 100, value: 50, stableHawkCount: 9 },
+  { id: "light", label: "轻度制裁", organizationCost: 5, conflictCost: 180, value: 45, stableHawkCount: 5 },
+  { id: "medium", label: "中度制裁", organizationCost: 10, conflictCost: 320, value: 40, stableHawkCount: 3 },
+  { id: "high", label: "重度制裁", organizationCost: 20, conflictCost: 480, value: 30, stableHawkCount: 2 },
 ] as const;
 
 export const INSTITUTION_POPULATION = 16;
@@ -74,7 +74,7 @@ export function getInstitutionPolicy(policy: InstitutionPolicyId | number): Inst
  * 按长期随机相遇均值场计算制度账本：
  * gross = encounters × 50
  * organization = encounters × K
- * conflictLoss = encounters × C × p²
+ * conflictLoss = encounters × C × h(h-1) / N(N-1)
  * net = gross - organization - conflictLoss
  */
 export function expectedLedger(
@@ -97,7 +97,10 @@ export function expectedLedger(
   const hawkRatio = hawkCount / populationSize;
   const gross = encounters * RESOURCE_PER_ENCOUNTER;
   const organization = encounters * selected.organizationCost;
-  const conflictLoss = encounters * selected.conflictCost * hawkRatio ** 2;
+  const hawkPairProbability = populationSize <= 1
+    ? 0
+    : hawkCount * (hawkCount - 1) / (populationSize * (populationSize - 1));
+  const conflictLoss = encounters * selected.conflictCost * hawkPairProbability;
   const net = gross - organization - conflictLoss;
   const totalResourceAfter = organization + conflictLoss + net;
   return {

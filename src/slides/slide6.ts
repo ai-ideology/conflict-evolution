@@ -1,4 +1,4 @@
-/** 第五关 · 资源不足：库存、淘汰与繁衍形成历史。 */
+/** 第五节 · 资源不足：库存、淘汰与繁衍形成历史。 */
 import {
   DEFAULT_ECOLOGY_PARAMS,
   createEcologyState,
@@ -277,7 +277,7 @@ function reset(): void {
   state = createEcologyState(16, 8, 150, false);
   pending = null;
   scene?.showState(state, 0);
-  updateHud("以前每代会重新计算；这一关开始，每个人都有会累积的生存储备。 ");
+  updateHud("以前每代会重新计算；从这里开始，每个人都有会累积的生存储备。 ");
   setCyclePhase("day");
   showPhase("#eco-intro");
 }

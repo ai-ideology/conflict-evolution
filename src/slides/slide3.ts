@@ -1,9 +1,9 @@
 /**
- * 第二关 · 如果大家都这么做？（群体演化 / 频率依赖）
+ * 第二节 · 如果大家都这么做？（群体演化 / 频率依赖）
  *
  * 圆形锦标赛（学习 ncase 的信任的进化）：
  *  - 16 个小人围成圈，当前亮线表示抽样展示的一次相遇
- *  - 点「演化一代」→ 逐个展示代表性相遇，再比较两种策略的期望收益
+ *  - 点「演化一代」→ 逐个点亮每人与其余15人的配对，再比较累计收益
  *  - 一轮结束后：得分最低者换成得分最高者的帽子（复制者动态）
  *  - 到达收益打平点后，再完整演化一代；比例仍不变才确认收敛
  */
@@ -11,12 +11,12 @@
 import { registerSlide } from "./Slide";
 import { $, revealSteps, clearTimers } from "./helpers";
 import { publish } from "../core/pubsub";
-import { DEFAULT_PARAMS, doveFitness, hawkFitness } from "../core/hawkDove";
+import { DEFAULT_PARAMS, roundRobinStrategyScores } from "../core/hawkDove";
 import { PopulationScene, type TournamentResult } from "../ui/populationScene";
 import { drawEvoChart } from "../ui/evoChart";
 
 const COUNT = 16;
-const P = DEFAULT_PARAMS; // V=50 C=100 → 平衡点 50%
+const P = DEFAULT_PARAMS; // 16 人真实循环赛 → 9 鹰 / 7 鸽
 
 let scene: PopulationScene | null = null;
 let stopChart: (() => void) | null = null;
@@ -25,23 +25,31 @@ let timers: number[] = [];
 let history: number[] = [];
 let generation = 0;
 let analysisShown = false;
+let chartDrawnThrough = 0;
 
 function updateHUD(): void {
   const hawks = history[history.length - 1]!;
-  $("#gen-count").textContent = `${generation}`;
-  $("#pop-ratio").textContent = `${hawks} 鹰 / ${COUNT - hawks} 鸽`;
-  $("#pop-bar-hawk").style.width = `${(hawks / COUNT) * 100}%`;
+  $("#pop-generation").textContent = `第 ${generation} 代`;
+  $("#pop-hawk-count").textContent = `${hawks}`;
+  $("#pop-dove-count").textContent = `${COUNT - hawks}`;
+  const counter = $("#pop-ratio-counter");
+  counter.classList.remove("ratio-bump");
+  void counter.offsetWidth;
+  counter.classList.add("ratio-bump");
 }
 
 function redrawChart(): void {
   stopChart?.();
   const canvas = $("#pop-chart") as HTMLCanvasElement;
-  const series = history.map((h) => h / COUNT);
-  stopChart = drawEvoChart(canvas, series, {
+  stopChart = drawEvoChart(canvas, history, {
     generations: Math.max(12, history.length - 1),
     height: 170,
     label: `第 ${generation} 代 →`,
+    maxValue: COUNT,
+    valueLabel: "鹰",
+    animateFromIndex: chartDrawnThrough,
   });
+  chartDrawnThrough = Math.max(0, history.length - 1);
 }
 
 function setControlsEnabled(enabled: boolean): void {
@@ -50,14 +58,24 @@ function setControlsEnabled(enabled: boolean): void {
 
 function isAtEquilibrium(): boolean {
   if (!scene) return false;
-  const pop = { hawkRatio: scene.hawkCount() / COUNT };
-  return Math.abs(hawkFitness(pop, P) - doveFitness(pop, P)) < 1e-9;
+  const scores = roundRobinStrategyScores(scene.hawkCount(), COUNT, P);
+  return Math.abs(scores.hawk - scores.dove) < 1e-9;
+}
+
+function strategyName(move: "hawk" | "dove"): string {
+  return move === "hawk" ? "鹰" : "鸽";
+}
+
+function replacementText(result: TournamentResult): string {
+  const low = result.scores[result.worstIdx]!;
+  const high = result.scores[result.bestIdx]!;
+  return `去掉一个最低分的${strategyName(result.worstKind)}（${low}分），加入一个最高分的${strategyName(result.bestKind)}（${high}分）。`;
 }
 
 function evolveOneGeneration(): void {
   if (!scene || scene.isBusy()) return;
   setControlsEnabled(false);
-  $("#pop-hint").textContent = "正在按当前群体比例计算每种策略的长期收益……";
+  $("#pop-hint").textContent = "淡线是这一代的全部配对；金线正在累计这个人与其余 15 人的收益……";
 
   const msPerAgent = 220;
   scene.playTournament(P, msPerAgent, (r: TournamentResult) => {
@@ -67,7 +85,8 @@ function evolveOneGeneration(): void {
       generation++;
       updateHUD();
       redrawChart();
-      $("#pop-hint").textContent = `第 ${generation} 代结束，仍然是 ${scene!.hawkCount()} 鹰 / ${COUNT - scene!.hawkCount()} 鸽。`;
+      const tiedScore = r.scores[r.bestIdx]!;
+      $("#pop-hint").textContent = `鹰和鸽都是 ${tiedScore} 分，不替换任何人。第 ${generation} 代结束，仍是 ${scene!.hawkCount()} 鹰 / ${COUNT - scene!.hawkCount()} 鸽。`;
       timers.push(window.setTimeout(settleDown, 900));
       return;
     }
@@ -76,11 +95,12 @@ function evolveOneGeneration(): void {
     updateHUD();
     redrawChart();
     const reachedEquilibrium = isAtEquilibrium();
+    const change = replacementText(r);
     if (reachedEquilibrium) {
-      $("#pop-hint").textContent = "现在鹰和鸽的收益打平了。再演化一代，看看比例会不会改变。";
+      $("#pop-hint").textContent = `${change} 现在来到 9 鹰 / 7 鸽；再演化一代，验证是否稳定。`;
       $("#btn-evolve").textContent = "再验证一代 →";
     } else {
-      $("#pop-hint").textContent = "低收益策略中的一个个体，换上了高收益策略的帽子。";
+      $("#pop-hint").textContent = change;
     }
 
     setControlsEnabled(true);
@@ -119,6 +139,7 @@ registerSlide({
     history = [2];
     generation = 0;
     analysisShown = false;
+    chartDrawnThrough = 0;
 
     $("#pop-playground").style.display = "block";
     $("#pop-analysis").style.display = "none";

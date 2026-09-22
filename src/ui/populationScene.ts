@@ -1,14 +1,14 @@
 /**
  * 第一至第四关的16席圆环场景。
- * 只点亮当前代表性配对，不绘制永久全连接网；演化一代后最多一人换帽。
+ * 第二关用淡色关系网表示本代真实循环赛，并逐个点亮个体与其余所有人的配对；
+ * 其他关卡仍可只显示当前代表性配对。演化一代后最多一人换帽。
  * 第五关起的库存、空席、淘汰与出生由独立生态场景承载。
  */
 
 import type { SketchContext } from "./sketchAnimals";
 import { drawPeep, HAT_COLORS, type PeepFace } from "./sketchPeeps";
 import {
-  doveFitness,
-  hawkFitness,
+  playRound,
   type Move,
   type PayoffParams,
 } from "../core/hawkDove";
@@ -49,10 +49,16 @@ export class PopulationScene {
   private startTime = performance.now();
   private agents: Agent[] = [];
   private scores: number[] = [];
+  /** 一代结算后保留所有人的分数，直到下一次演出或重置。 */
+  private showAllScores = false;
+  private lastBestScore = 0;
+  private lastWorstScore = 0;
   /** 当前正在被「聚光」的个体（锦标赛逐个结算用） */
   private focusIdx = -1;
-  /** 当前抽样展示的配对；不绘制永久全连接网。 */
+  /** 其他关卡当前抽样展示的配对。 */
   private activePair: [number, number] | null = null;
+  /** 第二关循环赛演出：聚光者与其余所有人的配对。 */
+  private activeAgainstGroup = false;
   private busy = false;
   private timers: number[] = [];
   private simulationRandom: RandomSource = createSeededRandom(20260921);
@@ -81,6 +87,7 @@ export class PopulationScene {
     this.simulationRandom = createSeededRandom(seed);
     this.agents = [];
     this.scores = new Array(count).fill(0);
+    this.showAllScores = false;
     const kinds: Move[] = [];
     for (let i = 0; i < count; i++) kinds.push(i < initialHawks ? "hawk" : "dove");
     if (shuffleKinds) shuffleWith(kinds, this.simulationRandom);
@@ -99,6 +106,7 @@ export class PopulationScene {
     }
     this.focusIdx = -1;
     this.activePair = null;
+    this.activeAgainstGroup = false;
     this.busy = false;
     this.startLoop();
   }
@@ -112,29 +120,30 @@ export class PopulationScene {
   }
 
   /**
- * 播放一整轮锦标赛：每个个体面对当前群体的随机对手，
- * 逐个聚光、显示期望总收益，最后低收益策略被高收益策略取代。
- * 使用群体比例计算期望收益，让有限数量的小人忠实呈现理论均衡 V/C。
+ * 播放一整轮循环赛：每个个体与其余所有个体各相遇一次，
+ * 逐个聚光、显示真实累计总收益，最后低收益策略被高收益策略取代。
    * @param msPerAgent 每个个体的结算时长（毫秒）
    */
   playTournament(
     p: PayoffParams,
     msPerAgent: number,
     onDone: (r: TournamentResult) => void,
+    settleMs = 1400,
   ): void {
     if (this.busy) return;
     this.busy = true;
     this.scores = new Array(this.agents.length).fill(0);
+    this.showAllScores = false;
     this.focusIdx = -1;
+    this.activeAgainstGroup = false;
 
     const n = this.agents.length;
-    // 按当前群体比例计算期望收益；乘 n 只是把数字放大到更直观的量级。
-    const pop = { hawkRatio: this.hawkCount() / n };
-    const hawkTotal = hawkFitness(pop, p) * n;
-    const doveTotal = doveFitness(pop, p) * n;
     const totals = new Array<number>(n).fill(0);
     for (let i = 0; i < n; i++) {
-      totals[i] = this.agents[i]!.kind === "hawk" ? hawkTotal : doveTotal;
+      for (let j = 0; j < n; j++) {
+        if (i === j) continue;
+        totals[i]! += playRound(this.agents[i]!.kind, this.agents[j]!.kind, p)[0];
+      }
     }
 
     // 逐个聚光：第 i 步时把第 i 只的得分累加显示
@@ -142,11 +151,10 @@ export class PopulationScene {
       this.timers.push(
         window.setTimeout(() => {
           this.focusIdx = i;
-          let partner = (i * 7 + 3) % n;
-          if (partner === i) partner = (partner + 1) % n;
-          this.activePair = [i, partner];
+          this.activePair = null;
+          this.activeAgainstGroup = true;
           for (let k = 0; k < n; k++) {
-            this.agents[k]!.dimmed = k !== i && k !== partner;
+            this.agents[k]!.dimmed = k !== i;
           }
           // 累加到「进行到第 i 只为止」的部分得分（让观众看到数字在长）
           for (let k = 0; k <= i; k++) this.scores[k] = totals[k]!;
@@ -165,6 +173,9 @@ export class PopulationScene {
         }
         const bestKind = this.agents[bestIdx]!.kind;
         const worstKind = this.agents[worstIdx]!.kind;
+        this.lastBestScore = totals[bestIdx]!;
+        this.lastWorstScore = totals[worstIdx]!;
+        this.showAllScores = true;
 
         let changedIdx: number | null = null;
         let changedTo: Move | null = null;
@@ -183,6 +194,7 @@ export class PopulationScene {
         // 解除聚光/变淡
         this.focusIdx = -1;
         this.activePair = null;
+        this.activeAgainstGroup = false;
         for (const a of this.agents) a.dimmed = false;
 
         const result: TournamentResult = {
@@ -198,7 +210,7 @@ export class PopulationScene {
           window.setTimeout(() => {
             this.busy = false;
             onDone(result);
-          }, 1400),
+          }, settleMs),
         );
       }, n * msPerAgent + 300),
     );
@@ -222,8 +234,10 @@ export class PopulationScene {
     if (candidates.length === 0) return null;
     const index = candidates[Math.floor(this.simulationRandom.next() * candidates.length)]!;
     this.scores.fill(0);
+    this.showAllScores = false;
     this.focusIdx = -1;
     this.activePair = null;
+    this.activeAgainstGroup = false;
     for (const agent of this.agents) agent.dimmed = false;
     this.mutate(index, to);
     return index;
@@ -244,6 +258,7 @@ export class PopulationScene {
     // 选择圆环对面的个体，保证当前互动线足够长，不会被相邻小人遮住。
     const opposite = (index + Math.floor(this.agents.length / 2)) % this.agents.length;
     this.activePair = [index, opposite];
+    this.activeAgainstGroup = false;
     for (let i = 0; i < this.agents.length; i++) {
       this.agents[i]!.dimmed = !this.activePair.includes(i);
     }
@@ -251,6 +266,7 @@ export class PopulationScene {
       if (this.focusIdx !== index) return;
       this.focusIdx = -1;
       this.activePair = null;
+      this.activeAgainstGroup = false;
       for (const agent of this.agents) agent.dimmed = false;
     }, durationMs));
   }
@@ -366,9 +382,55 @@ export class PopulationScene {
     const compact = h < 260;
     const compactCircle = canvas.dataset.layout === "compact-circle";
     const linkedCircle = canvas.dataset.layout === "linked-circle";
-    const peepScale = compact ? 0.43 : linkedCircle ? 0.55 : 0.62;
+    // 圆环较小时按相邻席位距离缩放角色，避免左右两侧沿竖直方向重叠；
+    // 舞台空间充足时则恢复更醒目的尺寸。
+    const neighborDistance = n > 1
+      ? Math.hypot(pos[1]!.x - pos[0]!.x, pos[1]!.y - pos[0]!.y)
+      : 64;
+    const linkedScale = Math.min(0.58, Math.max(0.4, neighborDistance / 108));
+    const peepScale = compact ? 0.43 : linkedCircle ? linkedScale : 0.62;
 
-    // 只显示当前配对，避免全连接网暗示有限群体逐对计分。
+    const roundRobinNetwork = canvas.dataset.network === "round-robin";
+
+    // 淡线表示本代循环赛中实际发生的全部配对。
+    if (roundRobinNetwork && this.busy) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(65,64,62,0.10)";
+      ctx.lineWidth = 0.8;
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          ctx.beginPath();
+          ctx.moveTo(pos[i]!.x, pos[i]!.y);
+          ctx.lineTo(pos[j]!.x, pos[j]!.y);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    // 聚光者与其余15人的实际配对一起点亮。
+    if (this.activeAgainstGroup && focus >= 0) {
+      const fp = pos[focus]!;
+      ctx.save();
+      ctx.strokeStyle = LINK_ACTIVE;
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = "round";
+      for (let i = 0; i < n; i++) {
+        if (i === focus) continue;
+        const tp = pos[i]!;
+        ctx.beginPath();
+        ctx.moveTo(fp.x, fp.y);
+        ctx.lineTo(tp.x, tp.y);
+        ctx.stroke();
+      }
+      ctx.fillStyle = "rgba(217,164,65,0.18)";
+      ctx.beginPath();
+      ctx.arc(fp.x, fp.y, 40, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 其他关卡只显示当前代表性配对。
     if (this.activePair) {
       const [from, to] = this.activePair;
       const fp = pos[from]!;
@@ -431,17 +493,37 @@ export class PopulationScene {
       });
       ctx.restore();
 
-      // 得分标签：固定在头顶正上方（屏幕坐标），避免顶部出界/底部遮头
-      if (this.busy && i === focus) {
+      // 聚光时显示当前分数；结算后保留全体分数，供玩家自己比较。
+      if ((this.busy && i === focus) || this.showAllScores) {
         ctx.save();
         const isFocus = i === focus;
         ctx.font = isFocus
           ? "bold 17px 'Xiaolai','Kaiti SC','KaiTi',serif"
           : "14px 'Xiaolai','Kaiti SC','KaiTi',serif";
         ctx.textAlign = "center";
-        ctx.fillStyle = isFocus ? LINK_ACTIVE : INK;
+        const scoreValue = this.scores[i]!;
+        const allTied = Math.abs(this.lastBestScore - this.lastWorstScore) < 1e-9;
+        ctx.fillStyle = isFocus
+          ? LINK_ACTIVE
+          : allTied
+            ? INK
+            : Math.abs(scoreValue - this.lastBestScore) < 1e-9
+              ? "#2f7d4a"
+              : "#c0392b";
         const score = Math.round(this.scores[i]! * 10) / 10;
-        ctx.fillText(`${score}`, p.x, p.y - 64);
+        // 分数沿圆环向外排：顶部向上、两侧向外、底部向下，
+        // 避免所有标签都挤在头顶并与相邻人物重叠。
+        const radialX = p.x - w / 2;
+        const radialY = p.y - h / 2;
+        const radialLength = Math.hypot(radialX, radialY) || 1;
+        const scoreOffset = linkedCircle || compactCircle ? 64 : 68;
+        const scoreX = p.x + (radialX / radialLength) * scoreOffset;
+        const scoreY = p.y + (radialY / radialLength) * scoreOffset;
+        ctx.fillText(
+          `${score}`,
+          Math.max(24, Math.min(w - 24, scoreX)),
+          Math.max(18, Math.min(h - 8, scoreY)),
+        );
         ctx.restore();
       }
     }

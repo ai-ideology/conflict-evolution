@@ -22,7 +22,7 @@ interface PropTween {
 }
 
 interface Actor {
-  kind: Move; // 本回合策略（决定帽子颜色）
+  kind: Move | null; // 选择前隐藏策略；揭晓后决定帽子颜色
   baseX: number; // 初始位置（画面宽度的比例）
   advance: number; // 0=原地，1=接近食物
   flee: number; // 退让位移（向外）
@@ -50,7 +50,7 @@ export class DuelScene {
   }
 
   private freshActor(baseX: number): Actor {
-    return { kind: "dove", baseX, advance: 0, flee: 0, face: "calm", hidden: false, holdingFood: false, tweens: {} };
+    return { kind: null, baseX, advance: 0, flee: 0, face: "calm", hidden: false, holdingFood: false, tweens: {} };
   }
 
   private reset(): void {
@@ -85,11 +85,11 @@ export class DuelScene {
   }
 
 
-  /** 播放对决动画，结束后回调。鹰鹰对决会返回真实赢家。 */
+  /** 播放对决动画，结束后回调。 */
   play(
     playerMove: Move,
     rivalMove: Move,
-    onResolved: (winner: "player" | "rival" | null) => void,
+    onResolved: () => void,
   ): void {
     this.clearTimers();
     this.reset();
@@ -110,18 +110,17 @@ export class DuelScene {
         t(200, () => this.tweenTo(R, "flee", 1, 500, easeOutCubic));
         t(450, () => this.tweenTo(P, "advance", 1, 750, easeInOutQuad));
         t(1250, () => { P.face = "happy"; P.holdingFood = true; });
-        t(1650, () => onResolved(null));
+        t(1650, onResolved);
         break;
       case "dove-hawk":
         t(80, () => { R.face = "angry"; P.face = "sad"; });
         t(200, () => this.tweenTo(P, "flee", 1, 500, easeOutCubic));
         t(450, () => this.tweenTo(R, "advance", 1, 750, easeInOutQuad));
         t(1250, () => { R.face = "happy"; R.holdingFood = true; });
-        t(1650, () => onResolved(null));
+        t(1650, onResolved);
         break;
       case "hawk-hawk":
-        // 双方冲向中间 → 吵架云 → 产生真实赢家和输家
-        const playerWins = Math.random() < 0.5;
+        // 双方冲向中间 → 吵架云 → 两败俱伤，食物也没了
         t(80, () => { P.face = "angry"; R.face = "angry"; });
         t(150, () => {
           this.tweenTo(P, "advance", 0.9, 450, easeInOutQuad);
@@ -136,14 +135,14 @@ export class DuelScene {
           this.scuffling = false;
           P.hidden = false;
           R.hidden = false;
-          P.face = playerWins ? "happy" : "dizzy";
-          R.face = playerWins ? "dizzy" : "happy";
-          P.holdingFood = playerWins;
-          R.holdingFood = !playerWins;
+          P.face = "dizzy";
+          R.face = "dizzy";
+          P.holdingFood = false;
+          R.holdingFood = false;
           this.tweenTo(P, "advance", 0.05, 380, easeOutCubic);
           this.tweenTo(R, "advance", 0.05, 380, easeOutCubic);
         });
-        t(2150, () => onResolved(playerWins ? "player" : "rival"));
+        t(2150, onResolved);
         break;
       default:
         // dove-dove：互相客气地让，最后一起分享
@@ -156,7 +155,7 @@ export class DuelScene {
           this.tweenTo(R, "advance", 0.55, 450, easeInOutQuad);
         });
         t(1850, () => { P.face = "happy"; R.face = "happy"; });
-        t(2200, () => onResolved(null));
+        t(2200, onResolved);
         break;
     }
   }
@@ -244,7 +243,7 @@ export class DuelScene {
 
     let x = actor.baseX * w + (foodX - actor.baseX * w) * actor.advance * 0.85;
     x -= dir * actor.flee * 100; // 退让向外
-    // 退让时也要把完整角色留在画布内（帽子绒球是最外侧部件）。
+    // 退让时也要把完整角色（帽檐和身体）留在画布内。
     x = Math.min(w - 58, Math.max(58, x));
 
     const walking = this.isAnimating(actor);

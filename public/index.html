@@ -25,9 +25,6 @@
       <div class="step" style="margin-top:48px">
         <button class="btn btn-primary btn-large" id="btn-start">开始 →</button>
       </div>
-      <p class="step note" style="margin-top:60px">
-        灵感来自 <a href="https://dccxi.com/trust/" target="_blank" rel="noopener">《信任的进化》</a>（ncase）
-      </p>
     </div>
   </section>
 
@@ -50,12 +47,12 @@
     </div>
   </section>
 
-  <!-- 第 2 屏：第一关 · 单次对决 -->
+  <!-- 第 2 屏：第一节 · 单次对决 -->
   <section class="slide" id="slide-duel">
     <div class="slide-inner">
 
       <div id="duel-arena">
-        <h2>第一关 · 你会争，还是让？</h2>
+        <h2>你会争，还是让？</h2>
         <p class="note" id="round-indicator">第 1 / 4 回合</p>
 
         <div class="stage-wrap">
@@ -120,7 +117,7 @@
         </p>
 
         <button class="btn btn-primary btn-large" id="btn-to-next-level" style="margin-top:20px">
-          去第二关看看 →
+          看看整个群体 →
         </button>
         </div>
       </div>
@@ -128,21 +125,29 @@
     </div>
   </section>
 
-  <!-- 第 3 屏：第二关 · 群体演化 -->
+  <!-- 第 3 屏：第二节 · 群体演化 -->
   <section class="slide" id="slide-population">
     <div class="slide-inner">
 
       <div id="pop-playground">
-        <h2>第二关 · 如果大家都这么做？</h2>
+        <h2>如果大家都这么做？</h2>
         <p class="step">这次我们把镜头拉远——看看一<b>整个群体</b>。</p>
         <p class="step">这里有 16 个邻居：<b class="hl-hawk">2 只鹰</b>（红帽）和 <b class="hl-dove">14 只鸽</b>（蓝帽）。</p>
-        <p class="step">每一代，混得差的策略会被混得好的策略取代。<br />点下面的按钮，看看会发生什么。</p>
+        <p class="step">每一代，每个人都会和<b>其余15个人各相遇一次</b>，再比较两种策略的累计收益。<br />混得差的策略会被混得好的策略取代。</p>
 
-        <div class="paper-card step" style="padding:10px 16px">
-          <canvas id="pop-canvas" style="width:100%;height:460px"></canvas>
+        <div class="paper-card population-stage step" style="padding:10px 16px">
+          <div class="circle-stage-wrap">
+            <canvas id="pop-canvas" data-network="round-robin" style="width:100%;height:460px"></canvas>
+            <div class="ratio-counter" id="pop-ratio-counter" aria-live="polite">
+              <span class="ratio-generation" id="pop-generation">第 0 代</span>
+              <div class="ratio-pair">
+                <span class="ratio-side ratio-hawk"><b id="pop-hawk-count">2</b><small>鹰</small></span>
+                <i>·</i>
+                <span class="ratio-side ratio-dove"><b id="pop-dove-count">14</b><small>鸽</small></span>
+              </div>
+            </div>
+          </div>
           <div class="pop-hud">
-            <span class="note">第 <b id="gen-count">0</b> 代 · <b id="pop-ratio">2 鹰 / 14 鸽</b></span>
-            <div class="pop-bar"><div class="pop-bar-hawk" id="pop-bar-hawk"></div></div>
             <p class="note" id="pop-hint" style="margin-top:6px">点「演化一代」，看看一代之后谁混得好。</p>
           </div>
         </div>
@@ -153,7 +158,7 @@
 
         <div id="settle-notice" class="settle-notice" style="display:none">
           <p class="big-quote">又过了一代，鹰鸽比例仍然没变。</p>
-          <p class="note">鹰和鸽的长期收益已经打平，群体才真正停在了这里。</p>
+          <p class="note">完成全部配对后，鹰和鸽的累计收益已经打平，群体才真正停在了这里。</p>
           <button class="btn btn-primary" id="btn-show-analysis">看看这意味着什么 →</button>
         </div>
 
@@ -164,42 +169,50 @@
 
       <div id="pop-analysis" style="display:none">
         <h2>群体停下来了</h2>
-        <p class="step">注意看曲线——鹰的比例没有一路冲到 100%，<br />而是<b>逐代靠近一半</b>，然后不再变化。</p>
+        <p class="step">注意看曲线——鹰的数量没有一路增加到 16，<br />而是停在了明确的数量上。</p>
         <div class="paper-card step">
           <p class="big-quote">一种策略的成功，<br />会改变让它成功的环境。</p>
           <p>
             鹰少的时候，到处是能让它占便宜的鸽，所以鹰变多。<br />
-            可鹰越多，越容易撞上另一只鹰——真实交手时一方赢得食物，另一方承担损失，长期平均收益随之下降。<br />
-            到某个比例时，当鹰和当鸽的期望收益<b>刚好打平</b>，群体就停在那里。
+            可鹰越多，越容易撞上另一只鹰——双方争抢会两败俱伤，累计收益随之下降。<br />
+            当16个人完成彼此之间的全部配对后，鹰和鸽的总收益<b>刚好打平</b>，群体就停在那里。
           </p>
           <p class="note">
             这叫做<b>频率依赖</b>：一个行为划不划算，不只看它自己，<br />
             还看群体里有多少人在做同样的事。<br />
-            （在这个世界里，平衡点 = 食物价值 ÷ 打架代价 = 50 ÷ 100 = <b>50%</b>）
+            在这个16人世界里，每人都与其余15人各相遇一次，最后停在 <b>9 鹰 / 7 鸽</b>。
           </p>
         </div>
         <p class="big-quote step">
           那么——一个<b class="hl-hawk">全是鹰</b>的世界，或一个<b class="hl-dove">全是鸽</b>的世界，<br />
           会不会更稳定？
         </p>
-        <button class="btn btn-primary btn-large step" id="btn-to-extremes">去第三关看看 →</button>
+        <button class="btn btn-primary btn-large step" id="btn-to-extremes">从极端世界重新开始 →</button>
       </div>
 
     </div>
   </section>
 
-  <!-- 第 4 屏：第三关 · 极端世界 -->
+  <!-- 第 4 屏：第三节 · 极端世界 -->
   <section class="slide" id="slide-extremes">
     <div class="slide-inner">
-      <h2 class="step">第三关 · 一个突变行为，能改变整个群体吗？</h2>
+      <h2 class="step">一个突变行为，能改变整个群体吗？</h2>
       <p class="step">从一个只有单一行为的群体开始，只放入一个不一样的行为。</p>
 
       <div class="extreme-workspace step">
         <div class="paper-card extreme-stage">
-          <canvas id="extreme-canvas" data-layout="linked-circle" style="width:100%;height:340px"></canvas>
+          <div class="circle-stage-wrap">
+            <canvas id="extreme-canvas" data-layout="linked-circle" style="width:100%;height:340px"></canvas>
+            <div class="ratio-counter ratio-counter-compact" id="extreme-ratio-counter" aria-live="polite">
+              <span class="ratio-generation" id="extreme-generation">第 0 代</span>
+              <div class="ratio-pair">
+                <span class="ratio-side ratio-hawk"><b id="extreme-hawk-count">16</b><small>鹰</small></span>
+                <i>·</i>
+                <span class="ratio-side ratio-dove"><b id="extreme-dove-count">0</b><small>鸽</small></span>
+              </div>
+            </div>
+          </div>
           <p class="big-quote" id="extreme-world-name">一个全是鹰的世界</p>
-          <p id="extreme-generation">第 0 代 · 16 鹰 / 0 鸽</p>
-          <div class="pop-bar" aria-hidden="true"><div class="pop-bar-hawk" id="extreme-bar-hawk"></div></div>
           <p class="note" id="extreme-hint">先看看：当每个人都选择强硬，会发生什么？</p>
         </div>
 
@@ -212,7 +225,7 @@
 
           <div class="paper-card extreme-phase" id="extreme-hawk-cost" style="display:none">
             <p class="big-quote">结果是：大家都在亏。</p>
-            <p>鹰遇到鹰，平均每次只有 <b class="hl-hawk">-25 分</b>。全是强硬者，并没有让所有人都占便宜。</p>
+            <p>鹰遇到鹰每场得到 <b class="hl-hawk">-25 分</b>；和其余15人交手后，每人累计 −375 分。全是强硬者，并没有让所有人都占便宜。</p>
             <p class="note">如果这时出现一个拒绝打架的家伙呢？</p>
             <button class="btn btn-dove" id="btn-extreme-add-dove">加入一只鸽 →</button>
           </div>
@@ -226,7 +239,7 @@
 
           <div class="paper-card extreme-phase" id="extreme-hawk-result" style="display:none">
             <p class="big-quote">鸽没有消失，反而扩散了。</p>
-            <p>鹰越多，彼此打架越频繁；不参与打架的鸽获得了生存空间。最后，群体停在了 8 鹰 / 8 鸽。</p>
+            <p>鹰越多，彼此打架越频繁；不参与打架的鸽获得了生存空间。最后，群体停在了 9 鹰 / 7 鸽。</p>
             <button class="btn btn-primary" id="btn-extreme-switch-dove">再看一个全是鸽的世界 →</button>
           </div>
 
@@ -238,7 +251,7 @@
 
           <div class="paper-card extreme-phase" id="extreme-dove-benefit" style="display:none">
             <p class="big-quote">现在很和平：大家平分食物。</p>
-            <p>两只鸽相遇，平均每只得到 <b class="hl-dove">25 分</b>。但这个世界也留下了一个机会……</p>
+            <p>两只鸽相遇每场得到 <b class="hl-dove">25 分</b>；和其余15人相遇后，每人累计375分。但这个世界也留下了一个机会……</p>
             <button class="btn btn-hawk" id="btn-extreme-add-hawk">加入一只鹰 →</button>
           </div>
 
@@ -253,30 +266,38 @@
             <p class="big-quote">两个极端世界，走向了同一个平衡。</p>
             <p>极端状态本身，会创造出另一种策略的生存空间。</p>
             <p class="note">没有哪个策略永远正确。接下来看看：究竟是什么决定了鹰会多一点，还是鸽会多一点？</p>
-            <button class="btn btn-primary" id="btn-to-env">去第四关看看 →</button>
+            <button class="btn btn-primary" id="btn-to-env">改变冲突的代价 →</button>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 第 5 屏：第四关 · 只改变打架损失 -->
+  <!-- 第 5 屏：第四节 · 只改变打架损失 -->
   <section class="slide" id="slide-env-teaser">
     <div class="slide-inner">
-      <h2 class="step">第四关 · 打架更疼，群体会改变吗？</h2>
+      <h2 class="step">打架更疼，群体会改变吗？</h2>
 
       <div id="env-playground">
         <p class="step">还是这 16 个邻居，也还是同样的食物。<br />这一次，我们只改变一件事：<b>打一架要付出多大代价</b>。</p>
 
         <div class="env-workspace step">
         <div class="paper-card env-lab">
-          <canvas id="env-canvas" data-layout="linked-circle" style="width:100%;height:320px"></canvas>
+          <div class="circle-stage-wrap">
+            <canvas id="env-canvas" data-layout="linked-circle" data-network="round-robin" style="width:100%;height:320px"></canvas>
+            <div class="ratio-counter ratio-counter-compact" id="env-ratio-counter" aria-live="polite">
+              <span class="ratio-generation" id="env-generation">现在</span>
+              <div class="ratio-pair">
+                <span class="ratio-side ratio-hawk"><b id="env-hawk-count">9</b><small>鹰</small></span>
+                <i>·</i>
+                <span class="ratio-side ratio-dove"><b id="env-dove-count">7</b><small>鸽</small></span>
+              </div>
+            </div>
+          </div>
 
           <div class="env-result">
             <p class="big-quote" id="env-world-name">原来的世界</p>
-            <p class="env-generation" id="env-generation">现在 · 8 鹰 / 8 鸽</p>
-            <div class="pop-bar" aria-hidden="true"><div class="pop-bar-hawk" id="env-bar-hawk"></div></div>
-            <p class="note" id="env-explanation">基准世界里，食物价值 50，打架损失 100，群体停在 8 鹰 / 8 鸽。</p>
+            <p class="note" id="env-explanation">基准世界里，食物价值 50，打架损失 100，16人循环赛停在 9 鹰 / 7 鸽。</p>
           </div>
 
           <div class="env-parameter-strip" aria-label="当前世界参数">
@@ -293,7 +314,7 @@
         <div class="paper-card env-story-panel env-phase" id="env-step-cost-high">
           <p class="env-chapter">实验一 · 只改变打架的代价</p>
           <p class="big-quote">如果食物还是 50 分，<br />但打一架变得更惨呢？</p>
-          <p class="note">先作一个猜想，再从同样的 8 鹰 / 8 鸽出发，一代一代看。</p>
+          <p class="note">先作一个猜想，再从同样的 9 鹰 / 7 鸽出发，一代一代看。</p>
           <button class="btn btn-primary" id="btn-env-cost-high">把损失提高到 200 分 →</button>
         </div>
 
@@ -301,20 +322,20 @@
           <p class="env-chapter">模拟正在进行</p>
           <p class="big-quote" id="env-running-title">世界正在变化……</p>
           <p id="env-running-copy"></p>
-          <p class="note">看左边：每一代只改变一个席位；亮起的连线表示这一代正在比较的互动。</p>
+          <p class="note">看左边：淡线是本代全部配对，金线依次结算一个人与其余15人的收益；全部完成后才替换一个席位。</p>
           <button class="btn btn-primary" id="btn-env-next-generation">演化一代 →</button>
         </div>
 
         <div class="paper-card env-story-panel env-phase" id="env-result-cost-high" style="display:none">
           <p class="big-quote">鹰变少了。</p>
-          <p>损失提高到 200 分后，群体从 8 鹰 / 8 鸽走到了 <b>4 鹰 / 12 鸽</b>。</p>
+          <p>损失提高到 200 分后，群体从 9 鹰 / 7 鸽走到了 <b>5 鹰 / 11 鸽</b>。</p>
           <p class="note">食物没变、人也没变；只是强硬者彼此相遇的代价更高了。</p>
           <button class="btn btn-primary" id="btn-env-cost-low">那如果打架变便宜呢？ →</button>
         </div>
 
         <div class="paper-card env-story-panel env-phase" id="env-result-cost-low" style="display:none">
           <p class="big-quote">这一次，鹰变多了。</p>
-          <p>损失降到 80 分后，群体从 8 鹰 / 8 鸽走到了 <b>10 鹰 / 6 鸽</b>。</p>
+          <p>损失降到 80 分后，群体从 9 鹰 / 7 鸽走到了 <b>11 鹰 / 5 鸽</b>。</p>
           <p class="env-mini-summary">人没有变，食物也没有变。<br /><b>仅仅改变冲突代价，群体就走向了不同结果。</b></p>
           <button class="btn btn-primary" id="btn-env-start-value">把三个世界放在一起 →</button>
         </div>
@@ -322,9 +343,9 @@
         <div class="paper-card env-story-panel env-phase" id="env-sandbox" style="display:none">
           <div class="env-conclusion">
             <p class="env-chapter">三个世界，只有打架损失不同</p>
-            <p class="big-quote">损失 80 → 10 鹰<br />损失 100 → 8 鹰<br />损失 200 → 4 鹰</p>
+            <p class="big-quote">损失 80 → 11 鹰<br />损失 100 → 9 鹰<br />损失 200 → 5 鹰</p>
             <p><b>冲突越昂贵，强硬越难成为多数。</b></p>
-            <p class="env-formula"><b>鹰的稳定比例 ≈ V ÷ C</b></p>
+            <p class="env-formula"><b>同一群体，在不同冲突代价下会停在不同数量。</b></p>
             <p class="note">这里始终把食物固定为 50 分，并把损失限制在高于食物价值的范围内。这样我们只观察“冲突代价”这一个变量。</p>
           </div>
           <button class="btn btn-primary" id="btn-to-scarcity">进入资源不足的世界 →</button>
@@ -336,11 +357,11 @@
     </div>
   </section>
 
-  <!-- 第 6 屏：第五关 · 资源不足 -->
+  <!-- 第 6 屏：第五节 · 资源不足 -->
   <section class="slide" id="slide-ecology">
     <div class="slide-inner">
-      <h2 class="step">第五关 · 当食物不够所有人活下去</h2>
-      <p class="step">这一关只改变<b>每天出现的食物份数</b>。从现在起，收益不再清零，而会进入每个人的生存储备。</p>
+      <h2 class="step">当食物不够所有人活下去</h2>
+      <p class="step">这次只改变<b>每天出现的食物份数</b>。从现在起，收益不再清零，而会进入每个人的生存储备。</p>
 
       <div id="eco-playground" class="eco-workspace step">
         <div class="paper-card eco-stage">
@@ -356,7 +377,7 @@
             <span data-phase="selection">同时淘汰</span>
             <span data-phase="birth">最多一次繁衍</span>
           </div>
-          <p class="note" id="eco-note">以前每代会重新计算；这一关开始，每个人都有会累积的生存储备。</p>
+          <p class="note" id="eco-note">以前每代会重新计算；从这里开始，每个人都有会累积的生存储备。</p>
         </div>
 
         <div class="eco-phase-slot">
@@ -490,7 +511,7 @@
   <section class="slide" id="slide-learning">
     <div class="slide-inner">
       <header class="env-header reveal">
-        <p class="eyebrow">第六关 · 学习能力</p>
+        <p class="eyebrow">学习能力</p>
         <h2>当“鹰”与“鸽”不再是固定身份</h2>
         <p>这一次不改变食物和损失，只问：个体记住自己的经历后，群体会怎样？</p>
       </header>
@@ -510,7 +531,7 @@
           <p class="note eco-note" id="learning-note">先建立一个不会学习的对照世界。</p>
         </div>
         <aside class="learn-side">
-          <nav class="learn-steps" aria-label="第六关进度">
+          <nav class="learn-steps" aria-label="学习过程">
             <span data-learning-step="baseline">固定世界</span>
             <span data-learning-step="remove-hats">摘下帽子</span>
             <span data-learning-step="person">一个人</span>
@@ -591,13 +612,13 @@
   <section class="slide" id="slide-order">
     <div class="slide-inner">
       <header class="env-header reveal">
-        <p class="eyebrow">第七关 · 建立秩序</p>
+        <p class="eyebrow">建立秩序</p>
         <h2>花一点资源制止争抢，值得吗？</h2>
-        <p>回到第四关：没有库存、饥饿、学习、淘汰和繁衍。总资源不变，只改变秩序投入。</p>
+        <p>回到最初的固定群体：没有库存、饥饿、学习、淘汰和繁衍。总资源不变，只改变秩序投入。</p>
       </header>
       <div class="eco-workspace order-workspace reveal" id="order-playground">
         <div class="paper-card order-stage">
-          <canvas id="order-canvas" data-layout="linked-circle" aria-label="十六席秩序实验群体"></canvas>
+          <canvas id="order-canvas" data-layout="linked-circle" data-network="round-robin" aria-label="十六席秩序实验群体"></canvas>
           <div class="order-fund" id="order-fund">
             <span>秩序基金</span>
             <b id="order-fund-value">0</b>
@@ -605,19 +626,19 @@
           </div>
           <div class="eco-hud order-hud">
             <span id="order-generation">第 0 代</span>
-            <span id="order-ratio">8 鹰 / 8 鸽</span>
+            <span id="order-ratio">9 鹰 / 7 鸽</span>
             <span>每代总资源 <b id="order-gross">400</b></span>
-            <span>群体净收益 <b id="order-net">200</b></span>
+            <span><span id="order-net-label">稳定净收益</span> <b id="order-net">160</b></span>
           </div>
           <div class="order-ledger-mini">
             <span>组织 <b id="order-cost">0</b></span>
-            <span>冲突损耗 <b id="order-conflict">200</b></span>
-            <span>留下 <b id="order-retained">200</b></span>
+            <span>冲突损耗 <b id="order-conflict">240</b></span>
+            <span>留下 <b id="order-retained">160</b></span>
           </div>
-          <p class="note" id="order-note">所有数字都是按 16 个比例席位折算的长期期望，不是一次具体抽签的保证。</p>
+          <p class="note" id="order-note">所有数字都按这16个人之间的无放回配对概率计算。</p>
         </div>
         <aside class="order-side">
-          <nav class="learn-steps order-steps" aria-label="第七关进度">
+          <nav class="learn-steps order-steps" aria-label="秩序实验过程">
             <span data-order-step="baseline">没有组织</span>
             <span data-order-step="small">少量投入</span>
             <span data-order-step="medium">中等投入</span>
@@ -628,13 +649,13 @@
           <div class="paper-card order-phase" id="order-intro">
             <p class="env-chapter">先看没有组织的世界</p>
             <p class="big-quote">400 点资源里，有多少真正留给了群体？</p>
-            <p>原始世界停在 8 鹰 / 8 鸽。争抢不用交管理费，但鹰鹰冲突会真实烧掉收益。</p>
+            <p>原始世界停在 9 鹰 / 7 鸽。争抢不用交管理费，但鹰鹰冲突会真实烧掉收益。</p>
             <button class="btn btn-primary" id="btn-order-baseline">打开没有组织的账本 →</button>
           </div>
 
           <div class="paper-card order-phase" id="order-baseline" style="display:none">
             <p class="env-chapter">没有组织 · 基准账本</p>
-            <div class="order-equation">400 总资源 − 0 组织成本 − 200 冲突损耗 = <b>200</b></div>
+            <div class="order-equation">400 总资源 − 0 组织成本 − 240 冲突损耗 = <b>160</b></div>
             <p>一半的资源在长期冲突风险中损失了。那能否拿出一点资源，换取更高的争抢代价？</p>
             <button class="btn btn-primary" id="btn-order-small">每份资源拿出 5 点 →</button>
           </div>
@@ -642,7 +663,7 @@
           <div class="paper-card order-phase" id="order-small-ready" style="display:none">
             <p class="env-chapter">钱已经花了，人还没改变</p>
             <p class="big-quote">总资源仍是 400，但 40 点先进入秩序基金。</p>
-            <p>可争夺资源变少，争抢代价从 100 提高到 180。此刻仍是 8 鹰 / 8 鸽，所以短期账面反而更差。</p>
+            <p>可争夺资源变少，争抢代价从 100 提高到 180。此刻仍是 9 鹰 / 7 鸽，所以短期账面反而更差。</p>
             <p class="env-chapter" style="margin-top:.7rem">先猜一猜：等群体演化到稳定之后——</p>
             <div class="choice-row">
               <button class="btn order-small-predict" data-predict="win">省下的损失多于 40</button>
@@ -660,8 +681,8 @@
 
           <div class="paper-card order-phase" id="order-small-result" style="display:none">
             <p class="env-chapter">少量投入 · 稳定账本</p>
-            <p class="big-quote">4 鹰 / 12 鸽，群体期望净收益变成 <b>270</b>。</p>
-            <p>组织花了 40，但冲突损耗从 200 降到 90，合计反而多留下 70。</p>
+            <p class="big-quote">5 鹰 / 11 鸽，群体期望净收益变成 <b>240</b>。</p>
+            <p>组织花了 40，但冲突损耗从 240 降到 120，合计反而多留下 80。</p>
             <p class="order-echo" id="order-small-echo"></p>
             <button class="btn btn-primary" id="btn-order-medium">如果每份拿出 10 点呢？ →</button>
           </div>
@@ -678,20 +699,20 @@
 
           <div class="paper-card order-phase" id="order-auto-running" style="display:none">
             <p class="env-chapter" id="order-auto-title">正在演化</p>
-            <p class="big-quote" id="order-auto-copy">从相同的 8 鹰 / 8 鸽重新开始。</p>
-            <p class="note">数字每代停一下；这里压缩的是已经看懂的重复过程。</p>
+            <p class="big-quote" id="order-auto-copy">从相同的 9 鹰 / 7 鸽重新开始。</p>
+            <p class="note">每代仍会完成全部配对、显示全体分数并明确替换；这里只缩短重复动画的停留时间。</p>
           </div>
 
           <div class="paper-card order-phase" id="order-medium-result" style="display:none">
             <p class="env-chapter">中等投入 · 稳定账本</p>
-            <p class="big-quote">2 鹰 / 14 鸽，群体期望净收益达到 <b>280</b>。</p>
+            <p class="big-quote">3 鹰 / 13 鸽，群体期望净收益达到 <b>256</b>。</p>
             <p>比少量投入更好。但这是否意味着组织投入越高越好？</p>
             <button class="btn btn-primary" id="btn-order-high">把投入提高到 20 点 →</button>
           </div>
 
           <div class="paper-card order-phase" id="order-high-result" style="display:none">
             <p class="env-chapter">较高投入 · 反例</p>
-            <p class="big-quote">争抢更少了，但群体净收益降到 <b>225</b>。</p>
+            <p class="big-quote">争抢更少了，但群体净收益降到 <b>208</b>。</p>
             <p>组织消耗了 160，已经超过它继续减少的冲突损耗。秩序并不是越重越好。</p>
             <button class="btn btn-primary" id="btn-order-compare">打开四个世界的总账 →</button>
           </div>
@@ -701,10 +722,10 @@
             <p class="big-quote" id="order-final-question">哪一种投入，让群体最后留下的最多？</p>
             <p class="note" id="order-final-hint">四个世界都已演化到稳定。先自己判断，再翻开总账。</p>
             <div class="order-compare-table is-quiz">
-              <button class="order-guess" data-guess="none"><b>无</b><span>8 鹰 / 8 鸽</span><em>冲突损耗 200 · 组织 0</em><strong>?</strong></button>
-              <button class="order-guess" data-guess="light"><b>少量</b><span>4 鹰 / 12 鸽</span><em>冲突损耗 90 · 组织 40</em><strong>?</strong></button>
-              <button class="order-guess" data-guess="medium"><b>中等</b><span>2 鹰 / 14 鸽</span><em>冲突损耗 40 · 组织 80</em><strong>?</strong></button>
-              <button class="order-guess" data-guess="high"><b>较高</b><span>1 鹰 / 15 鸽</span><em>冲突损耗 15 · 组织 160</em><strong>?</strong></button>
+              <button class="order-guess" data-guess="none"><b>无</b><span>9 鹰 / 7 鸽</span><em>冲突损耗 240 · 组织 0</em><strong>?</strong></button>
+              <button class="order-guess" data-guess="light"><b>少量</b><span>5 鹰 / 11 鸽</span><em>冲突损耗 120 · 组织 40</em><strong>?</strong></button>
+              <button class="order-guess" data-guess="medium"><b>中等</b><span>3 鹰 / 13 鸽</span><em>冲突损耗 64 · 组织 80</em><strong>?</strong></button>
+              <button class="order-guess" data-guess="high"><b>较高</b><span>2 鹰 / 14 鸽</span><em>冲突损耗 32 · 组织 160</em><strong>?</strong></button>
             </div>
             <div id="order-final-reveal" style="display:none">
               <p class="env-mini-summary step" id="order-final-verdict"></p>

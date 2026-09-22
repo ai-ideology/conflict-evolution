@@ -3,7 +3,7 @@ import { publish } from "../core/pubsub";
 
 /**
  * 幻灯片播放器：管理 slide 的切换、当前进度。
- * 进度通过 hash（#2）同步，刷新后可回到对应关。
+ * 进度通过 hash（#2）同步，刷新后可回到对应章节。
  */
 export class Slideshow {
   private order: string[] = [];

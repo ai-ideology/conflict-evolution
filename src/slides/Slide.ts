@@ -1,6 +1,6 @@
 /**
  * Slide 生命周期接口（学习 ncase/trust 的 slide 架构）
- * 每一关 / 每一屏是一个 Slide，DOM 静态写在 index.html 中。
+ * 每一节 / 每一屏是一个 Slide，DOM 静态写在 index.html 中。
  */
 export interface Slide {
   /** 对应 DOM 元素 id */

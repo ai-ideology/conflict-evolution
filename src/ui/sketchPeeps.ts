@@ -56,33 +56,28 @@ function wline(c: SketchContext, x1: number, y1: number, x2: number, y2: number)
   ctx.stroke();
 }
 
-function sellipse(
+/** 稳定的手绘双线圆：保留纸笔感，同时让头部明确呈正圆。 */
+function sketchCircle(
   c: SketchContext,
   x: number,
   y: number,
-  rx: number,
-  ry: number,
+  r: number,
   fill?: string,
 ): void {
-  const { ctx, t } = c;
-  for (let pass = 0; pass < 2; pass++) {
-    const phase = pass * 1.7 + Math.floor(t * 2.2) * 0.35;
-    ctx.beginPath();
-    for (let i = 0; i <= 22; i++) {
-      const a = (i / 22) * Math.PI * 2;
-      const px = x + Math.cos(a) * rx * (1 + Math.sin(a * 3 + phase) * 0.05);
-      const py = y + Math.sin(a) * ry * (1 + Math.cos(a * 2 + phase * 1.3) * 0.05);
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    if (pass === 0 && fill) {
-      ctx.fillStyle = fill;
-      ctx.fill();
-    }
-    ctx.globalAlpha = pass === 0 ? 0.9 : 0.35;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
+  const { ctx } = c;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  if (fill) {
+    ctx.fillStyle = fill;
+    ctx.fill();
   }
+  ctx.stroke();
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  ctx.beginPath();
+  ctx.arc(x + 0.45, y - 0.35, r - 0.35, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function dot(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): void {
@@ -208,30 +203,49 @@ export function drawPeep(
   sline(c, -5 * s, bodyY + 12 * s, -5 * s - legSwing, 0);
   sline(c, 5 * s, bodyY + 12 * s, 5 * s + legSwing, 0);
 
-  // 身体
-  sellipse(c, 0, bodyY, 13 * s, 16 * s, SKIN);
-
-  // 手臂
+  // 手臂先画在身体后面，让身体盖住肩部接缝，线条不会穿过躯干。
   const armSwing = walking ? Math.sin(phase) * 5 * s : 0;
   if (pose.holdingFood) {
-    sline(c, -9 * s, bodyY - 2 * s, pose.dir * 16 * s, bodyY + 2 * s);
-    sline(c, 9 * s, bodyY + 2 * s, pose.dir * 16 * s, bodyY + 4 * s);
-    drawFood({ ctx, t: c.t }, pose.dir * 22 * s, bodyY - 2 * s, 0.55);
+    const handX = pose.dir * 18 * s;
+    sline(c, -pose.dir * 9 * s, bodyY - 2 * s, handX, bodyY + 3 * s);
+    sline(c, pose.dir * 10 * s, bodyY + 1 * s, handX, bodyY + 5 * s);
   } else if (pose.armsUp) {
     sline(c, -10 * s, bodyY - 4 * s, -20 * s, bodyY - 22 * s);
     sline(c, 10 * s, bodyY - 4 * s, 20 * s, bodyY - 22 * s);
   } else {
-    sline(c, -11 * s, bodyY - 2 * s, -15 * s - armSwing, bodyY + 12 * s);
-    sline(c, 11 * s, bodyY - 2 * s, 15 * s + armSwing, bodyY + 12 * s);
+    ctx.beginPath();
+    ctx.moveTo(-10 * s, bodyY - 4 * s);
+    ctx.quadraticCurveTo(-17 * s - armSwing * 0.35, bodyY + 3 * s, -16 * s - armSwing, bodyY + 10 * s);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(10 * s, bodyY - 4 * s);
+    ctx.quadraticCurveTo(17 * s + armSwing * 0.35, bodyY + 3 * s, 16 * s + armSwing, bodyY + 10 * s);
+    ctx.stroke();
+  }
+
+  // 简洁的水滴形身体：肩部略窄，下腹圆润。
+  ctx.beginPath();
+  ctx.moveTo(0, bodyY - 16 * s);
+  ctx.bezierCurveTo(-10 * s, bodyY - 16 * s, -13 * s, bodyY - 7 * s, -12 * s, bodyY + 3 * s);
+  ctx.bezierCurveTo(-11 * s, bodyY + 13 * s, -6 * s, bodyY + 16 * s, 0, bodyY + 16 * s);
+  ctx.bezierCurveTo(6 * s, bodyY + 16 * s, 11 * s, bodyY + 13 * s, 12 * s, bodyY + 3 * s);
+  ctx.bezierCurveTo(13 * s, bodyY - 7 * s, 10 * s, bodyY - 16 * s, 0, bodyY - 16 * s);
+  ctx.closePath();
+  ctx.fillStyle = SKIN;
+  ctx.fill();
+  ctx.stroke();
+
+  if (pose.holdingFood) {
+    drawFood({ ctx, t: c.t }, pose.dir * 22 * s, bodyY - 2 * s, 0.55);
   }
 
   // 头
   const headY = bodyY - 34 * s;
   const headR = 24 * s;
-  sellipse(c, 0, headY, headR, headR, SKIN);
+  sketchCircle(c, 0, headY, headR, SKIN);
 
-  // 帽子（平顶桶帽，红=鹰 / 蓝=鸽，绒球垂在朝向侧）
-  if (pose.hat) drawHat(c, headY - headR, s, pose.hat, pose.dir);
+  // 帽子（平顶桶帽，红=鹰 / 蓝=鸽）
+  if (pose.hat) drawHat(c, headY - headR, s, pose.hat);
 
   // 五官（侧脸时向朝向偏移）
   const lookX = pose.frontFace ? 0 : pose.dir * 6 * s;
@@ -241,14 +255,13 @@ export function drawPeep(
   ctx.restore();
 }
 
-/* ---------- 帽子（平顶桶帽 + 垂在旁边的小绒球） ---------- */
+/* ---------- 帽子（平顶桶帽） ---------- */
 
 function drawHat(
   c: SketchContext,
   hatBaseY: number,
   s: number,
   color: HatColor,
-  dir: 1 | -1,
 ): void {
   const { ctx } = c;
   const fill = HAT_COLORS[color];
@@ -271,16 +284,6 @@ function drawHat(
 
   // 帽檐底线（微微手绘抖动）
   wline(c, -21 * s, hatBaseY + 1 * s, 21 * s, hatBaseY + 1 * s);
-
-  // 小绒球：从帽顶角垂一根线，末端一个毛球
-  const bx = dir * 20 * s;
-  const by = hatBaseY - 16 * s;
-  sline(c, dir * 12 * s, topY + 2 * s, bx, by);
-  ctx.fillStyle = fill;
-  dot(ctx, bx + dir * 2 * s, by - 2 * s, 4.5 * s);
-  ctx.beginPath();
-  ctx.arc(bx + dir * 2 * s, by - 2 * s, 4.5 * s, 0, Math.PI * 2);
-  ctx.stroke();
 
   ctx.restore();
 }

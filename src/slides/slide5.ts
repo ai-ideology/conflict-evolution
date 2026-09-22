@@ -1,14 +1,14 @@
 /**
- * 第四关 · 只改变打架损失
- * 受控档位 80 / 100 / 200；每代统一调用核心离散演化规则。
+ * 第四节 · 只改变打架损失
+ * 受控档位 80 / 100 / 200；每代播放16人完整循环赛并按累计收益替换一人。
  */
 
 import {
-  discreteGenerationStep,
+  finiteGenerationStep,
   payoffMatrix,
   type PayoffParams,
 } from "../core/hawkDove";
-import { PopulationScene } from "../ui/populationScene";
+import { PopulationScene, type TournamentResult } from "../ui/populationScene";
 import { publish } from "../core/pubsub";
 import { registerSlide } from "./Slide";
 import { $, revealSteps, clearTimers } from "./helpers";
@@ -16,8 +16,9 @@ import { $, revealSteps, clearTimers } from "./helpers";
 const COUNT = 16;
 const VALUE = 50;
 const BASE_COST = 100;
-const INITIAL_HAWKS = 8;
-const STEP_ANIMATION_MS = 620;
+const INITIAL_HAWKS = 9;
+const MS_PER_AGENT = 115;
+const RESULT_PAUSE_MS = 700;
 
 interface ActiveExperiment {
   cost: number;
@@ -28,7 +29,6 @@ interface ActiveExperiment {
 
 let scene: PopulationScene | null = null;
 let timers: number[] = [];
-let displayedHawks = INITIAL_HAWKS;
 let active: ActiveExperiment | null = null;
 
 function params(cost: number): PayoffParams {
@@ -49,10 +49,17 @@ function updateParameterDisplay(cost: number): void {
 }
 
 function updatePopulationDisplay(hawks: number, label: string): void {
-  displayedHawks = hawks;
-  $("#env-generation").textContent =
-    label + " · " + hawks + " 鹰 / " + (COUNT - hawks) + " 鸽";
-  $("#env-bar-hawk").style.width = String((hawks / COUNT) * 100) + "%";
+  $("#env-generation").textContent = label;
+  $("#env-hawk-count").textContent = String(hawks);
+  $("#env-dove-count").textContent = String(COUNT - hawks);
+  const counter = $("#env-ratio-counter");
+  const nextValue = label + ":" + hawks;
+  if (counter.dataset.value !== nextValue) {
+    counter.dataset.value = nextValue;
+    counter.classList.remove("ratio-bump");
+    void counter.offsetWidth;
+    counter.classList.add("ratio-bump");
+  }
 }
 
 function resetPopulation(cost: number, name: string, hint: string): void {
@@ -73,17 +80,15 @@ function showPhase(selector: string): void {
   panel.classList.add("env-panel-enter");
 }
 
-function moveOne(nextHawks: number): void {
-  if (!scene || nextHawks === displayedHawks) return;
-  const to = nextHawks > displayedHawks ? "hawk" : "dove";
-  const from = to === "hawk" ? "dove" : "hawk";
-  const candidates = scene.kinds()
-    .map((kind, index) => (kind === from ? index : -1))
-    .filter((index) => index >= 0);
-  const index = candidates[0];
-  if (index === undefined) return;
-  scene.spotlight(index, STEP_ANIMATION_MS - 80);
-  scene.evolveOne(index, to);
+function strategyName(move: "hawk" | "dove"): string {
+  return move === "hawk" ? "鹰" : "鸽";
+}
+
+function replacementText(result: TournamentResult): string {
+  if (result.changedIdx === null) {
+    return `鹰和鸽都是 ${result.scores[result.bestIdx]} 分，本代不替换任何人。`;
+  }
+  return `去掉一个最低分的${strategyName(result.worstKind)}（${result.scores[result.worstIdx]}分），加入一个最高分的${strategyName(result.bestKind)}（${result.scores[result.bestIdx]}分）。`;
 }
 
 function prepareExperiment(cost: number, worldName: string, resultPanel: string): void {
@@ -112,44 +117,42 @@ function advanceGeneration(): void {
   const experiment = active;
   const button = $("#btn-env-next-generation") as HTMLButtonElement;
   button.disabled = true;
-  experiment.generation++;
-
-  const nextHawks = discreteGenerationStep(
-    displayedHawks,
-    COUNT,
-    params(experiment.cost),
-  );
-
-  if (nextHawks === displayedHawks) {
-    updatePopulationDisplay(
-      displayedHawks,
-      "第 " + experiment.generation + " 代（比例没变）",
-    );
-    $("#env-explanation").textContent =
-      "又完整验证了一代，比例仍然没变。现在才能确认这个教学模型停在了这里。";
-    timers.push(window.setTimeout(() => finishExperiment(experiment), STEP_ANIMATION_MS));
-    return;
-  }
-
-  moveOne(nextHawks);
   $("#env-explanation").textContent =
-    "这一代只发生一件事：一名低收益策略转向了高收益策略。";
+    "正在进行本代循环赛：每个人依次与其余15人结算，完成后再比较总分。";
+  $("#env-running-copy").textContent =
+    "淡线是全部配对，金线是当前角色正在累计的15场收益。";
 
-  timers.push(window.setTimeout(() => {
+  scene.playTournament(params(experiment.cost), MS_PER_AGENT, (result) => {
     if (active !== experiment) return;
-    updatePopulationDisplay(nextHawks, "第 " + experiment.generation + " 代");
-    const following = discreteGenerationStep(nextHawks, COUNT, params(experiment.cost));
+    experiment.generation++;
+    const hawks = scene!.hawkCount();
+    const change = replacementText(result);
+    updatePopulationDisplay(
+      hawks,
+      "第 " + experiment.generation + " 代" +
+        (result.changedIdx === null ? "（数量没变）" : ""),
+    );
+    $("#env-explanation").textContent = change;
+
+    if (result.changedIdx === null) {
+      $("#env-running-copy").textContent =
+        "全体分数保留在人物头顶。又完整验证了一代，群体确实停在这里。";
+      timers.push(window.setTimeout(() => finishExperiment(experiment), RESULT_PAUSE_MS));
+      return;
+    }
+
+    const following = finiteGenerationStep(hawks, COUNT, params(experiment.cost));
     button.disabled = false;
-    if (following === nextHawks) {
+    if (following === hawks) {
       button.textContent = "再验证一代 →";
       $("#env-running-copy").textContent =
-        "两种策略的期望收益已经打平，但还要再运行一代才能确认。";
+        "全体分数已经显示；群体来到候选稳定数量，还要完整运行一代确认。";
     } else {
       button.textContent = "再演化一代 →";
       $("#env-running-copy").textContent =
-        "群体还没停下来。下一代仍然只会改变一个席位。";
+        "全体分数已经显示。下一代仍会完成全部配对，并且只替换一个席位。";
     }
-  }, STEP_ANIMATION_MS));
+  });
 }
 
 function showConclusion(): void {
@@ -192,9 +195,8 @@ registerSlide({
     resetPopulation(
       BASE_COST,
       "原来的世界",
-      "基准世界里，食物价值 50，打架损失 100，群体停在 8 鹰 / 8 鸽。",
+      "基准世界里，食物价值 50，打架损失 100，16 人循环赛停在 9 鹰 / 7 鸽。",
     );
-    $("#env-generation").textContent = "现在 · 8 鹰 / 8 鸽";
     timers.push(...revealSteps(document.getElementById(this.id)!, 420, true));
   },
   onLeave() {

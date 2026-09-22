@@ -1,9 +1,9 @@
 /**
  * 鹰鸽博弈核心引擎 —— 与 UI 完全解耦。
  *
- * 经典模型（Maynard Smith, 1973）：
+ * 本作采用鹰鸽博弈的期望收益教学模型：
  *   V = 资源价值，C = 冲突代价
- *   鹰 vs 鹰：胜者得 V，败者付出 C，期望 (V - C) / 2
+ *   鹰 vs 鹰：双方都按期望收益 (V - C) / 2 结算
  *   鹰 vs 鸽：鹰独得 V，鸽得 0
  *   鸽 vs 鸽：一方退让，期望 V / 2
  */
@@ -35,21 +35,13 @@ export function playRound(self: Move, other: Move, p: PayoffParams): [number, nu
   return [p.value / 2, p.value / 2];
 }
 
-/**
- * 一次真实对局的结算。
- * playRound 用于长期期望；这里的鹰鹰相遇必须产生真实赢家和输家。
- */
+/** 单次对局也遵循页面展示的支付矩阵，避免同一作品出现两套规则。 */
 export function resolveRound(
   self: Move,
   other: Move,
   p: PayoffParams,
-  selfWins = Math.random() < 0.5,
+  _selfWins?: boolean,
 ): ResolvedRound {
-  if (self === "hawk" && other === "hawk") {
-    return selfWins
-      ? { payoffs: [p.value, -p.cost], winner: "self" }
-      : { payoffs: [-p.cost, p.value], winner: "other" };
-  }
   return { payoffs: playRound(self, other, p), winner: null };
 }
 
@@ -89,8 +81,63 @@ export function essHawkRatio(p: PayoffParams): number {
   return Math.min(1, p.value / p.cost);
 }
 
+/** 有限群体循环赛中，每个鹰/鸽与其余所有个体各相遇一次所得的总分。 */
+export function roundRobinStrategyScores(
+  hawkCount: number,
+  populationSize: number,
+  p: PayoffParams,
+): { hawk: number; dove: number } {
+  if (!Number.isInteger(populationSize) || populationSize <= 1) {
+    throw new Error("populationSize 必须是大于 1 的整数");
+  }
+  const h = Math.min(populationSize, Math.max(0, Math.round(hawkCount)));
+  const m = payoffMatrix(p);
+  return {
+    hawk: (h - 1) * m.hh + (populationSize - h) * m.hd,
+    dove: h * m.dh + (populationSize - h - 1) * m.dd,
+  };
+}
+
+/** 16席等有限群体的一代：真实循环赛总分较低的策略减少一个席位。 */
+export function finiteGenerationStep(
+  hawkCount: number,
+  populationSize: number,
+  p: PayoffParams,
+  epsilon = 1e-9,
+): number {
+  const current = Math.min(populationSize, Math.max(0, Math.round(hawkCount)));
+  // 没有突变时，纯策略群体不会凭空产生另一种策略。
+  if (current === 0 || current === populationSize) return current;
+  const scores = roundRobinStrategyScores(current, populationSize, p);
+  const difference = scores.hawk - scores.dove;
+  if (Math.abs(difference) <= epsilon) return current;
+  return difference > 0 ? current + 1 : current - 1;
+}
+
+/** 找到有限循环赛中两种策略总分最接近的鹰数量。 */
+export function nearestFiniteEquilibriumCount(
+  populationSize: number,
+  p: PayoffParams,
+): number {
+  if (!Number.isInteger(populationSize) || populationSize <= 1) {
+    throw new Error("populationSize 必须是大于 1 的整数");
+  }
+  let best = 1;
+  let bestGap = Number.POSITIVE_INFINITY;
+  for (let h = 1; h < populationSize; h++) {
+    const scores = roundRobinStrategyScores(h, populationSize, p);
+    const gap = Math.abs(scores.hawk - scores.dove);
+    if (gap < bestGap) {
+      best = h;
+      bestGap = gap;
+    }
+  }
+  return best;
+}
+
 /**
- * 教学模式的一代：比较当前比例下两种策略的期望收益，
+ * 大群体比例近似的一代（保留给未来的大群体扩展）：
+ * 比较当前比例下两种策略的期望收益，
  * 每代只让一个席位从低收益策略转向高收益策略。
  */
 export function discreteGenerationStep(

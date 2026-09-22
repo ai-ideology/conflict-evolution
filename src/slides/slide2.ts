@@ -1,10 +1,10 @@
 /**
- * 第 2 屏（第一关主体）：你会争，还是让？
+ * 第 2 屏（第一节主体）：你会争，还是让？
  *
  * 流程：
  *  1. 玩家在「争 / 让」之间选择（对手性格从温和逐渐变强硬）
  *  2. Canvas 演绎对决动画，结算收益
- *  3. 玩满 4 回合 → 揭示支付矩阵 → 留下群体问题进入第二关
+ *  3. 玩满 4 回合 → 揭示支付矩阵 → 留下群体问题进入第二节
  */
 
 import { registerSlide } from "./Slide";
@@ -76,12 +76,11 @@ function choose(move: Move): void {
   if (script.rivalMove === "hawk" && !firstHawkEncounter) firstHawkEncounter = true;
   if (move === "hawk") hawkPlays++;
 
-  scene.play(move, script.rivalMove, (winner) => {
+  scene.play(move, script.rivalMove, () => {
     const { payoffs: [mine, theirs] } = resolveRound(
       move,
       script.rivalMove,
       DEFAULT_PARAMS,
-      winner === "player",
     );
     playerTotal += mine;
     rivalTotal += theirs;
@@ -92,9 +91,7 @@ function choose(move: Move): void {
 
     const fightResult =
       move === "hawk" && script.rivalMove === "hawk"
-        ? winner === "player"
-          ? " 你赢得了食物，对方承担了 100 分损失。"
-          : " 对方赢得了食物，你承担了 100 分损失。"
+        ? " 食物在冲突中毁掉了，你和对方各损失 25 分。"
         : "";
     $("#round-remark").textContent = rivalRemark(move, script) + fightResult;
     round++;

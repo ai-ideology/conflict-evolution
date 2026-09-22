@@ -1,11 +1,11 @@
 /**
- * 第三关 · 一个突变行为如何改变极端群体
+ * 第三节 · 一个突变行为如何改变极端群体
  * 同一个圆形群体舞台，严格按“观察 → 投放 → 一代一停 → 验证”推进。
  */
 
 import { DEFAULT_PARAMS } from "../core/hawkDove";
 import { publish } from "../core/pubsub";
-import { PopulationScene } from "../ui/populationScene";
+import { PopulationScene, type TournamentResult } from "../ui/populationScene";
 import { registerSlide } from "./Slide";
 import { $, revealSteps, clearTimers } from "./helpers";
 
@@ -35,13 +35,33 @@ function updateHUD(message: string): void {
 }
 
 function updateHUDWithCount(hawks: number, message: string): void {
-  $("#extreme-generation").textContent = `第 ${generation} 代 · ${hawks} 鹰 / ${COUNT - hawks} 鸽`;
-  $("#extreme-bar-hawk").style.width = `${(hawks / COUNT) * 100}%`;
+  $("#extreme-generation").textContent = `第 ${generation} 代`;
+  $("#extreme-hawk-count").textContent = `${hawks}`;
+  $("#extreme-dove-count").textContent = `${COUNT - hawks}`;
+  const counter = $("#extreme-ratio-counter");
+  const nextValue = `${generation}:${hawks}`;
+  if (counter.dataset.value !== nextValue) {
+    counter.dataset.value = nextValue;
+    counter.classList.remove("ratio-bump");
+    void counter.offsetWidth;
+    counter.classList.add("ratio-bump");
+  }
   $("#extreme-hint").textContent = message;
 }
 
 function setButtonEnabled(selector: string, enabled: boolean): void {
   ($(selector) as HTMLButtonElement).disabled = !enabled;
+}
+
+function strategyName(move: "hawk" | "dove"): string {
+  return move === "hawk" ? "鹰" : "鸽";
+}
+
+function scoreChange(result: TournamentResult): string {
+  if (result.changedIdx === null) {
+    return `所有人都是 ${result.scores[result.bestIdx]} 分，本代不替换。`;
+  }
+  return `去掉一个最低分的${strategyName(result.worstKind)}（${result.scores[result.worstIdx]}分），加入一个最高分的${strategyName(result.bestKind)}（${result.scores[result.bestIdx]}分）。`;
 }
 
 function observePureWorld(world: World): void {
@@ -51,10 +71,10 @@ function observePureWorld(world: World): void {
   updateHUD("正在逐个观察：每个个体会和群体中的其他人相遇……");
   scene.playTournament(P, 150, () => {
     if (world === "hawk") {
-      updateHUD("每一对鹰都可能打起来；长期平均下来，每只鹰都是 -25 分。");
+      updateHUD("每只鹰与其余15人交手：每场 -25 分，一轮累计 -375 分。");
       showPhase("#extreme-hawk-cost");
     } else {
-      updateHUD("没有人升级冲突。两只鸽相遇，平均每只得到 25 分。");
+      updateHUD("每只鸽与其余15人相遇：每场 25 分，一轮累计 375 分。");
       showPhase("#extreme-dove-benefit");
     }
   });
@@ -90,8 +110,8 @@ function evolveOneGeneration(world: World): void {
     const hawks = scene!.hawkCount();
     updateHUD(
       result.changedIdx === null
-        ? `又过了一代，仍然是 ${hawks} 鹰 / ${COUNT - hawks} 鸽。`
-        : `一名低收益策略换了帽子。现在是 ${hawks} 鹰 / ${COUNT - hawks} 鸽。`,
+        ? `${scoreChange(result)} 又过了一代，仍然是 ${hawks} 鹰 / ${COUNT - hawks} 鸽。`
+        : `${scoreChange(result)} 现在是 ${hawks} 鹰 / ${COUNT - hawks} 鸽。`,
     );
 
     if (result.changedIdx === null) {
@@ -100,7 +120,7 @@ function evolveOneGeneration(world: World): void {
       return;
     }
 
-    if (hawks === 8) {
+    if (hawks === 9) {
       $(title).textContent = "鹰和鸽的收益打平了。";
       $(copy).textContent = "但一次打平还不能证明稳定。再演化一代，看看比例会不会改变。";
       ($(button) as HTMLButtonElement).textContent = "再验证一代 →";

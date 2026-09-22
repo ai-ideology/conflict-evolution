@@ -277,20 +277,103 @@ h1, h2, h3, h4 {
   margin-top: 6px;
 }
 
-.pop-bar {
-  height: 14px;
-  border: var(--border);
-  border-radius: var(--radius-hand-2);
-  background: var(--dove-soft);
-  overflow: hidden;
-  margin-top: 4px;
+/*
+ * 圆环是持续变化的“舞台”，不再用卡片边框把它框成静态信息块。
+ * 右侧步骤面板继续保留纸卡，用来承载问题、解释与操作。
+ */
+.population-stage,
+.extreme-stage,
+.env-lab,
+.learn-stage,
+.order-stage {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
-.pop-bar-hawk {
-  height: 100%;
-  width: 0%;
-  background: var(--hawk);
-  transition: width 0.6s ease;
+.population-stage {
+  padding-inline: 4px !important;
+}
+
+.learn-stage,
+.order-stage {
+  padding-inline: 8px;
+}
+
+.circle-stage-wrap {
+  position: relative;
+}
+
+.ratio-counter {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  transform: rotate(-1deg);
+  min-width: 150px;
+  padding: 9px 14px 8px;
+  border: 2px solid rgba(65, 64, 62, 0.45);
+  border-radius: var(--radius-hand-3);
+  background: rgba(255, 253, 247, 0.93);
+  box-shadow: 3px 4px 0 rgba(65, 64, 62, 0.12);
+  text-align: center;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.ratio-counter-compact {
+  min-width: 132px;
+  padding: 7px 12px 6px;
+}
+
+.ratio-generation {
+  display: block;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.ratio-pair {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-hand);
+}
+
+.ratio-pair > i {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.ratio-side {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.ratio-side b {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.ratio-side small {
+  font-size: 1rem;
+}
+
+.ratio-hawk { color: var(--hawk); }
+.ratio-dove { color: var(--dove); }
+
+.ratio-bump {
+  animation: ratio-bump 0.42s ease-out;
+}
+
+@keyframes ratio-bump {
+  0% { transform: rotate(-1deg) scale(0.92); }
+  55% { transform: rotate(0deg) scale(1.06); }
+  100% { transform: rotate(-1deg) scale(1); }
 }
 
 /* ---------- 双世界布局 ---------- */
@@ -707,21 +790,17 @@ body:has(#slide-learning.active) { overflow-y: hidden; }
 .extreme-stage {
   width: 100%;
   margin: 0;
-  padding: 8px 20px 16px;
+  padding: 4px 8px 12px;
 }
 
 .extreme-stage canvas {
   display: block;
-  height: min(340px, 42vh) !important;
-  min-height: 280px;
+  height: min(430px, 52vh) !important;
+  min-height: 390px;
 }
 
 .extreme-stage .big-quote {
   margin: 2px 0;
-}
-
-.extreme-stage .pop-bar {
-  margin: 8px 0;
 }
 
 .extreme-phase-slot {
@@ -744,7 +823,7 @@ body:has(#slide-learning.active) { overflow-y: hidden; }
 @media (max-width: 760px) {
   #slide-extremes .slide-inner { max-width: 720px; }
   .extreme-workspace { grid-template-columns: 1fr; }
-  .extreme-stage canvas { height: 330px !important; min-height: 0; }
+  .extreme-stage canvas { height: 350px !important; min-height: 0; }
 }
 
 /* ---------- 第四关：环境实验室 ---------- */
@@ -774,13 +853,13 @@ body:has(#slide-learning.active) { overflow-y: hidden; }
 .env-lab {
   width: 100%;
   margin: 0;
-  padding: 8px 20px 16px;
+  padding: 4px 8px 12px;
 }
 
 .env-lab canvas {
   display: block;
-  height: min(320px, 40vh) !important;
-  min-height: 280px;
+  height: min(440px, 54vh) !important;
+  min-height: 400px;
 }
 
 .env-result {
@@ -790,12 +869,6 @@ body:has(#slide-learning.active) { overflow-y: hidden; }
 
 .env-result .big-quote {
   margin-bottom: 2px;
-}
-
-.env-generation {
-  font-family: var(--font-hand);
-  font-size: 1.12rem;
-  margin-bottom: 8px;
 }
 
 .env-parameter-strip {
@@ -1057,7 +1130,7 @@ body:has(#slide-learning.active) { overflow-y: hidden; }
 
 
 
-/* ---------- 底部关卡导航 ---------- */
+/* ---------- 底部章节导航 ---------- */
 
 /* 导航占位而非悬浮：给 body 留出导航高度的空间 */
 body {
@@ -1110,7 +1183,7 @@ body {
   transform: scale(1.3);
 }
 
-/* 关卡名气泡 */
+/* 章节序号气泡 */
 .level-tip {
   position: absolute;
   bottom: 30px;
@@ -1137,7 +1210,7 @@ body {
   border-top-color: var(--ink);
 }
 
-/* 鼠标悬停、键盘聚焦、触屏首点，都能看到关卡名 */
+/* 鼠标悬停、键盘聚焦、触屏首点，都能看到章节序号 */
 .level-dot:hover .level-tip,
 .level-dot:focus-visible .level-tip,
 .level-dot.tip-open .level-tip {
@@ -1187,7 +1260,7 @@ body {
 @media (max-width: 760px) {
   #slide-env-teaser .slide-inner { max-width: 720px; }
   .env-workspace { grid-template-columns: 1fr; }
-  .env-lab canvas { height: 330px !important; min-height: 0; }
+  .env-lab canvas { height: 350px !important; min-height: 0; }
   .eco-workspace { grid-template-columns: 1fr; }
   .eco-stage canvas { height: 330px !important; min-height: 0; }
 }

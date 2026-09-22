@@ -1,5 +1,5 @@
 /**
- * 迷你演化曲线图：手绘风折线，展示鹰的比例随代数的变化。
+ * 迷你演化曲线图：手绘风折线，展示鹰的比例或数量随代数的变化。
  */
 
 export interface EvoChartOptions {
@@ -12,6 +12,12 @@ export interface EvoChartOptions {
   teaser?: boolean;
   /** teaser 模式下曲线画到的位置（0~1），默认 0.45 */
   cutoff?: number;
+  /** 纵轴最大值；默认 1（比例模式）。 */
+  maxValue?: number;
+  /** 数量模式的终点单位。 */
+  valueLabel?: string;
+  /** 已经展示过的最后一个数据点下标；此前的折线立即显示，只动画新增部分。 */
+  animateFromIndex?: number;
 }
 
 /** 绘制比例序列（0~1），带动画。返回停止函数。 */
@@ -32,7 +38,18 @@ export function drawEvoChart(
   const generations = opts.generations ?? series.length - 1;
 
   const toX = (i: number) => padL + ((w - padL - padR) * i) / generations;
-  const toY = (v: number) => padT + (h - padT - padB) * (1 - v);
+  const maxValue = opts.maxValue ?? 1;
+  const toY = (v: number) => padT + (h - padT - padB) * (1 - v / maxValue);
+  const lastIndex = Math.max(0, series.length - 1);
+  const animateFromIndex = Math.max(
+    0,
+    Math.min(opts.animateFromIndex ?? 0, lastIndex),
+  );
+
+  const pointAt = (i: number) => ({
+    x: toX(i) + Math.sin(i * 7.3) * 1.2,
+    y: toY(series[i] ?? 0) + Math.cos(i * 5.1) * 1.2,
+  });
 
   let raf = 0;
   const start = performance.now();
@@ -53,24 +70,32 @@ export function drawEvoChart(
     ctx.fillStyle = "#736e66";
     ctx.font = "15px 'Xiaolai','Kaiti SC','KaiTi',serif";
     ctx.textAlign = "right";
-    ctx.fillText("全是鹰", padL - 8, padT + 10);
-    ctx.fillText("全是鸽", padL - 8, h - padB);
+    ctx.fillText(opts.maxValue ? `${maxValue}只鹰` : "全是鹰", padL - 8, padT + 10);
+    ctx.fillText(opts.maxValue ? "0只鹰" : "全是鸽", padL - 8, h - padB);
     ctx.textAlign = "center";
     ctx.fillText(opts.label ?? "时间（代数）→", (padL + w - padR) / 2, h - 8);
 
-    // 演化曲线
-    const n = Math.max(2, Math.floor(series.length * progress));
+    // 旧折线立即保留，只让这次新增的线段从上次终点继续生长。
+    const visibleEnd =
+      animateFromIndex + (lastIndex - animateFromIndex) * progress;
+    const wholeEnd = Math.floor(visibleEnd);
     ctx.strokeStyle = "#c0392b";
     ctx.lineWidth = 3.5;
     ctx.beginPath();
-    for (let i = 0; i < n; i++) {
-      const x = toX(i);
-      const y = toY(series[i] ?? 0);
-      // 轻微抖动模拟手绘
-      const jx = Math.sin(i * 7.3) * 1.2;
-      const jy = Math.cos(i * 5.1) * 1.2;
-      if (i === 0) ctx.moveTo(x + jx, y + jy);
-      else ctx.lineTo(x + jx, y + jy);
+    const first = pointAt(0);
+    ctx.moveTo(first.x, first.y);
+    for (let i = 1; i <= wholeEnd; i++) {
+      const point = pointAt(i);
+      ctx.lineTo(point.x, point.y);
+    }
+    if (wholeEnd < lastIndex) {
+      const from = pointAt(wholeEnd);
+      const to = pointAt(wholeEnd + 1);
+      const segmentProgress = visibleEnd - wholeEnd;
+      ctx.lineTo(
+        from.x + (to.x - from.x) * segmentProgress,
+        from.y + (to.y - from.y) * segmentProgress,
+      );
     }
     ctx.stroke();
 
@@ -80,7 +105,10 @@ export function drawEvoChart(
       ctx.fillStyle = "#c0392b";
       ctx.font = "18px 'Ma Shan Zheng','Kaiti SC','KaiTi',serif";
       ctx.textAlign = "left";
-      ctx.fillText(`鹰约 ${Math.round(lastV * 100)}%`, toX(series.length - 1) - 70, toY(lastV) - 12);
+      const endLabel = opts.maxValue
+        ? `${Math.round(lastV)}只${opts.valueLabel ?? ""}`
+        : `鹰约 ${Math.round(lastV * 100)}%`;
+      ctx.fillText(endLabel, toX(series.length - 1) - 54, toY(lastV) - 12);
     }
 
     if (progress < 1) raf = requestAnimationFrame(frame);

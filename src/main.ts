@@ -33,13 +33,13 @@ const SLIDE_ORDER = [
 const LEVEL_NAMES = [
   "标题",
   "规则说明",
-  "第一关 · 你会争还是让",
-  "第二关 · 如果大家都这么做",
-  "第三关 · 一个突变行为",
-  "第四关 · 改变打架损失",
-  "第五关 · 当食物不够",
-  "第六关 · 当个体开始学习",
-  "第七关 · 用资源建立秩序",
+  "你会争还是让",
+  "如果大家都这么做",
+  "一个突变行为",
+  "改变打架损失",
+  "当食物不够",
+  "当个体开始学习",
+  "用资源建立秩序",
 ];
 
 const show = new Slideshow();
@@ -49,7 +49,7 @@ show.registerOrder(SLIDE_ORDER);
 subscribe("slideshow/next", () => show.next());
 subscribe("slideshow/goto", (i) => show.goto(i as number));
 
-// 底部关卡导航
+// 底部章节导航
 initLevelNav(SLIDE_ORDER.map((id, i) => ({ id, name: LEVEL_NAMES[i] ?? id })));
 
 show.start();

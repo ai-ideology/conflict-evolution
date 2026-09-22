@@ -1,6 +1,6 @@
 /**
- * 底部关卡导航（参考 ncase《信任的进化》页面底部的圆点导航）：
- * 一排圆点，当前关实心高亮，hover 显示关卡名，点击跳转。
+ * 底部章节导航（参考 ncase《信任的进化》页面底部的圆点导航）：
+ * 一排圆点，当前章节实心高亮，提示只显示序号，点击跳转。
  */
 
 import { subscribe, publish } from "../core/pubsub";
@@ -24,7 +24,7 @@ export function initLevelNav(order: LevelInfo[]): void {
 
   const nav = document.createElement("nav");
   nav.id = "level-nav";
-  nav.setAttribute("aria-label", "关卡选择");
+  nav.setAttribute("aria-label", "互动章节导航");
 
   order.forEach((lv, i) => {
     const item = document.createElement("button");
@@ -34,11 +34,11 @@ export function initLevelNav(order: LevelInfo[]): void {
 
     const tip = document.createElement("span");
     tip.className = "level-tip";
-    tip.textContent = `${i + 1}. ${lv.name}`;
+    tip.textContent = `${i + 1}`;
     item.appendChild(tip);
 
     item.addEventListener("click", () => {
-      // 触屏：第一次点只显示关卡名，第二次点才跳转（鼠标有 hover，不受影响）
+      // 触屏：第一次点只显示序号，第二次点才跳转（鼠标有 hover，不受影响）
       if (isCoarsePointer() && i !== currentIndex && tipOpenIndex !== i) {
         tipOpenIndex = i;
         refresh();

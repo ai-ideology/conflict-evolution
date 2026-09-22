@@ -1,5 +1,5 @@
-/** 第七关 · 固定总资源下，用公共投入提高争抢代价。 */
-import { discreteGenerationStep, type PayoffParams } from "../core/hawkDove";
+/** 第七节 · 固定总资源下，用公共投入提高争抢代价。 */
+import { finiteGenerationStep, type PayoffParams } from "../core/hawkDove";
 import {
   expectedLedger,
   getInstitutionPolicy,
@@ -7,13 +7,16 @@ import {
   type InstitutionPolicy,
   type InstitutionPolicyId,
 } from "../core/institution";
-import { PopulationScene } from "../ui/populationScene";
+import { PopulationScene, type TournamentResult } from "../ui/populationScene";
 import { registerSlide } from "./Slide";
 import { $, clearTimers, revealSteps } from "./helpers";
 
 const COUNT = 16;
-const INITIAL_HAWKS = 8;
-const STEP_MS = 680;
+const INITIAL_HAWKS = 9;
+const MANUAL_MS_PER_AGENT = 100;
+const AUTO_MS_PER_AGENT = 55;
+const AUTO_SETTLE_MS = 550;
+const BETWEEN_GENERATIONS_MS = 700;
 
 let scene: PopulationScene | null = null;
 let timers: number[] = [];
@@ -21,7 +24,6 @@ let stopped = false;
 let currentHawks = INITIAL_HAWKS;
 let currentPolicy: InstitutionPolicy = getInstitutionPolicy("none");
 let generation = 0;
-let verified = false;
 let smallPrediction: string | null = null;
 let finalGuessed = false;
 
@@ -50,12 +52,15 @@ function markStep(step: string): void {
 
 function updateStage(note: string): void {
   const ledger = expectedLedger(currentPolicy, { hawkCount: currentHawks });
+  const stable =
+    finiteGenerationStep(currentHawks, COUNT, params(currentPolicy)) === currentHawks;
   $("#order-generation").textContent = "第 " + generation + " 代";
   $("#order-ratio").textContent = currentHawks + " 鹰 / " + (COUNT - currentHawks) + " 鸽";
   $("#order-gross").textContent = fmt(ledger.gross);
   $("#order-cost").textContent = fmt(ledger.organization);
   $("#order-conflict").textContent = fmt(ledger.conflictLoss);
   $("#order-net").textContent = fmt(ledger.net);
+  $("#order-net-label").textContent = stable ? "稳定净收益" : "当前短期净收益";
   $("#order-retained").textContent = fmt(ledger.net);
   $("#order-fund-value").textContent = fmt(ledger.organization);
   $("#order-fund-copy").textContent =
@@ -67,31 +72,31 @@ function resetWorld(policyId: InstitutionPolicyId, note: string): void {
   currentPolicy = getInstitutionPolicy(policyId);
   currentHawks = INITIAL_HAWKS;
   generation = 0;
-  verified = false;
   scene?.setup(COUNT, INITIAL_HAWKS, true, 20260921);
   updateStage(note);
 }
 
-function moveOne(nextHawks: number): void {
-  if (!scene || nextHawks === currentHawks) return;
-  const to = nextHawks > currentHawks ? "hawk" : "dove";
-  const from = to === "hawk" ? "dove" : "hawk";
-  const index = scene.kinds().findIndex((kind) => kind === from);
-  if (index < 0) return;
-  scene.spotlight(index, STEP_MS - 100);
-  scene.evolveOne(index, to);
+function strategyName(move: "hawk" | "dove"): string {
+  return move === "hawk" ? "鹰" : "鸽";
+}
+
+function replacementText(result: TournamentResult): string {
+  if (result.changedIdx === null) {
+    return `鹰和鸽都是 ${result.scores[result.bestIdx]} 分，本代不替换任何人。`;
+  }
+  return `去掉一个最低分的${strategyName(result.worstKind)}（${result.scores[result.worstIdx]}分），加入一个最高分的${strategyName(result.bestKind)}（${result.scores[result.bestIdx]}分）。`;
 }
 
 function openBaseline(): void {
   markStep("baseline");
-  updateStage("基准世界已经稳定在 8 鹰 / 8 鸽；先把 400 点资源逐项对账。");
+  updateStage("基准世界已经稳定在 9 鹰 / 7 鸽；先把 400 点资源逐项对账。");
   showPhase("#order-baseline");
 }
 
 function prepareSmall(): void {
   resetWorld(
     "light",
-    "只换上少量投入参数；群体还没有演化，所以仍是 8 鹰 / 8 鸽。",
+    "只换上少量投入参数；群体还没有演化，所以仍是 9 鹰 / 7 鸽。",
   );
   // 重置预测：必须先猜，才能开始演化
   smallPrediction = null;
@@ -106,11 +111,11 @@ function prepareSmall(): void {
 function smallEcho(): string {
   switch (smallPrediction) {
     case "win":
-      return "你刚才猜「省下的更多」——猜对了：省下的冲突损耗（110）远多于组织花掉的 40。";
+      return "你刚才猜「省下的更多」——猜对了：省下的冲突损耗（120）远多于组织花掉的 40。";
     case "tie":
-      return "你刚才猜「刚好抵消」——实际上省下的（110）比花掉的（40）多不少。";
+      return "你刚才猜「刚好抵消」——实际上省下的（120）比花掉的（40）多不少。";
     case "lose":
-      return "你刚才猜「组织花得更多」——这一次相反：40 换回了 110。但这不是永远成立，往下看。";
+      return "你刚才猜「组织花得更多」——这一次相反：40 换回了 120。但这不是永远成立，往下看。";
     default:
       return "";
   }
@@ -123,35 +128,43 @@ function smallFirstStep(): void {
 
 function advanceSmall(): void {
   if (!scene || scene.isBusy() || stopped) return;
-  const next = discreteGenerationStep(currentHawks, COUNT, params(currentPolicy));
-  if (next === currentHawks) {
-    if (!verified) {
-      verified = true;
-      generation++;
-      updateStage("又验证了一代，比例仍然没变；少量投入世界确实停在这里。");
+  const button = $("#btn-order-small-generation") as HTMLButtonElement;
+  button.disabled = true;
+  $("#order-small-copy").textContent =
+    "正在完成本代循环赛：每个人依次与其余15人结算。";
+
+  scene.playTournament(params(currentPolicy), MANUAL_MS_PER_AGENT, (result) => {
+    if (stopped) return;
+    generation++;
+    currentHawks = scene!.hawkCount();
+    const change = replacementText(result);
+    const ledger = expectedLedger(currentPolicy, { hawkCount: currentHawks });
+    updateStage(
+      change + " 当前人数下的短期账面净收益是 " + fmt(ledger.net) + "。",
+    );
+
+    if (result.changedIdx === null) {
+      $("#order-small-copy").textContent =
+        change + " 全体分数保留在人物头顶，少量投入世界确认稳定。";
       timers.push(window.setTimeout(() => {
         $("#order-small-echo").textContent = smallEcho();
         showPhase("#order-small-result");
-      }, STEP_MS));
+      }, BETWEEN_GENERATIONS_MS));
+      return;
     }
-    return;
-  }
-  generation++;
-  moveOne(next);
-  currentHawks = next;
-  updateStage("这一代只改变一个席位；争抢越不划算，强硬策略的期望收益越低。");
-  const button = $("#btn-order-small-generation") as HTMLButtonElement;
-  const following = discreteGenerationStep(currentHawks, COUNT, params(currentPolicy));
-  button.textContent = following === currentHawks ? "再验证一代 →" : "再演化一代 →";
-  $("#order-small-copy").textContent =
-    "第 " + generation + " 代结束：群体净收益现在是 " +
-    fmt(expectedLedger(currentPolicy, { hawkCount: currentHawks }).net) + "。";
+
+    const following = finiteGenerationStep(currentHawks, COUNT, params(currentPolicy));
+    button.textContent = following === currentHawks ? "再验证一代 →" : "再演化一代 →";
+    button.disabled = false;
+    $("#order-small-copy").textContent =
+      change + " 当前人数下的短期净收益是 " + fmt(ledger.net) + "。";
+  }, 900);
 }
 
 function prepareMedium(): void {
   resetWorld(
     "medium",
-    "回到相同的 8 鹰 / 8 鸽起点；只把秩序投入改成每份 10 点。",
+    "回到相同的 9 鹰 / 7 鸽起点；只把秩序投入改成每份 10 点。",
   );
   markStep("medium");
   showPhase("#order-medium-predict");
@@ -168,24 +181,29 @@ function runAutomatic(policyId: "medium" | "high", resultPhase: string): void {
   showPhase("#order-auto-running");
 
   const step = () => {
-    if (stopped || !scene) return;
-    const next = discreteGenerationStep(currentHawks, COUNT, params(currentPolicy));
-    if (next === currentHawks) {
-      generation++;
-      updateStage("再验证一代，比例没有变化；现在打开这一档的稳定账本。");
-      timers.push(window.setTimeout(() => showPhase(resultPhase), STEP_MS));
-      return;
-    }
-    generation++;
-    moveOne(next);
-    currentHawks = next;
-    const ledger = expectedLedger(currentPolicy, { hawkCount: currentHawks });
+    if (stopped || !scene || scene.isBusy()) return;
     $("#order-auto-copy").textContent =
-      "第 " + generation + " 代："
-      + currentHawks + " 鹰 / " + (COUNT - currentHawks)
-      + " 鸽，期望净收益 " + fmt(ledger.net) + "。";
-    updateStage("重复过程正在压缩播放，但每一代仍只改变一个席位。");
-    timers.push(window.setTimeout(step, STEP_MS));
+      "第 " + (generation + 1) + " 代正在完成全部配对……";
+    scene.playTournament(params(currentPolicy), AUTO_MS_PER_AGENT, (result) => {
+      if (stopped) return;
+      generation++;
+      currentHawks = scene!.hawkCount();
+      const change = replacementText(result);
+      const ledger = expectedLedger(currentPolicy, { hawkCount: currentHawks });
+      $("#order-auto-copy").textContent =
+        "第 " + generation + " 代："
+        + currentHawks + " 鹰 / " + (COUNT - currentHawks)
+        + " 鸽。" + change + " 当前短期净收益 " + fmt(ledger.net) + "。";
+      updateStage(
+        change + " 数字是当前人数下的短期账面；稳定后再打开最终账本。",
+      );
+
+      if (result.changedIdx === null) {
+        timers.push(window.setTimeout(() => showPhase(resultPhase), BETWEEN_GENERATIONS_MS));
+        return;
+      }
+      timers.push(window.setTimeout(step, BETWEEN_GENERATIONS_MS));
+    }, AUTO_SETTLE_MS);
   };
   timers.push(window.setTimeout(step, 420));
 }
@@ -233,7 +251,7 @@ function guessFinal(guessId: string, button: HTMLElement): void {
 
   $("#order-final-verdict").textContent =
     guessId === "medium"
-      ? "没错——减少冲突最多的那一档，并不是留下最多的一档。中等投入的 280 才是最高。"
+      ? "没错——减少冲突最多的那一档，并不是留下最多的一档。中等投入的 256 才是最高。"
       : "看起来值得再想想：减少冲突最多的那一档，留下的却不是最多。组织本身也要花资源。";
 
   const reveal = $("#order-final-reveal");
@@ -247,7 +265,7 @@ function reset(): void {
   timers = [];
   resetWorld(
     "none",
-    "所有数字都是按 16 个比例席位折算的长期期望，不是一次具体抽签的保证。",
+    "策略分数来自16人完整循环赛；资源账本按这16人中无放回抽取双方的概率计算。",
   );
   markStep("baseline");
   showPhase("#order-intro");

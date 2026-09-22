@@ -11,6 +11,9 @@ import {
   nearestEquilibriumCount,
   replicatorStep,
   simulateGenerations,
+  finiteGenerationStep,
+  nearestFiniteEquilibriumCount,
+  roundRobinStrategyScores,
 } from "./hawkDove";
 
 const p = DEFAULT_PARAMS; // V=50, C=100
@@ -23,14 +26,14 @@ describe("支付矩阵", () => {
     expect(playRound("dove", "dove", p)).toEqual([25, 25]);
   });
 
-  test("单次鹰鹰相遇有真实赢家和输家", () => {
+  test("单次鹰鹰相遇遵循支付矩阵，双方两败俱伤", () => {
     expect(resolveRound("hawk", "hawk", p, true)).toEqual({
-      payoffs: [50, -100],
-      winner: "self",
+      payoffs: [-25, -25],
+      winner: null,
     });
     expect(resolveRound("hawk", "hawk", p, false)).toEqual({
-      payoffs: [-100, 50],
-      winner: "other",
+      payoffs: [-25, -25],
+      winner: null,
     });
   });
 
@@ -43,8 +46,8 @@ describe("支付矩阵", () => {
   });
 });
 
-describe("16 人教学演化", () => {
-  test("每代只改变一个席位并在 8/8 停止", () => {
+describe("大群体比例近似（备用理论工具）", () => {
+  test("按比例近似时每代只改变一个席位并在 8/8 停止", () => {
     expect(discreteGenerationStep(2, 16, p)).toBe(3);
     expect(discreteGenerationStep(7, 16, p)).toBe(8);
     expect(discreteGenerationStep(8, 16, p)).toBe(8);
@@ -80,6 +83,36 @@ describe("16 人教学演化", () => {
         expect(Math.abs(next - hawks)).toBeLessThanOrEqual(1);
       }
     }
+  });
+});
+
+describe("16 人真实循环赛演化", () => {
+  test("排除自己并累计其余15场收益", () => {
+    expect(roundRobinStrategyScores(2, 16, p)).toEqual({
+      hawk: 675,
+      dove: 325,
+    });
+    expect(roundRobinStrategyScores(9, 16, p)).toEqual({
+      hawk: 150,
+      dove: 150,
+    });
+  });
+
+  test("默认参数每代只换一人并停在9鹰7鸽", () => {
+    const trace = [2];
+    while (trace.length < 20) {
+      const next = finiteGenerationStep(trace.at(-1)!, 16, p);
+      trace.push(next);
+      if (next === trace.at(-2)) break;
+    }
+    expect(trace).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 9]);
+    expect(nearestFiniteEquilibriumCount(16, p)).toBe(9);
+  });
+
+  test("第四关三个损失档位停在11、9、5只鹰", () => {
+    expect(nearestFiniteEquilibriumCount(16, { value: 50, cost: 80 })).toBe(11);
+    expect(nearestFiniteEquilibriumCount(16, { value: 50, cost: 100 })).toBe(9);
+    expect(nearestFiniteEquilibriumCount(16, { value: 50, cost: 200 })).toBe(5);
   });
 });
 
